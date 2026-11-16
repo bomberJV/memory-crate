@@ -1,5 +1,8 @@
 # Memory Crate
 
+[Project priorities and agent handoff](https://github.com/bomberJV/brandon-studio/tree/priority-hub/priorities)
+
+
 Estimate how model weights, a KV cache and reserved memory fit on a device.
 
 From the repository root, run `python -m http.server 8000` and open [Memory Crate](http://localhost:8000/memory/).
