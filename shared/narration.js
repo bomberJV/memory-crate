@@ -250,7 +250,8 @@ function schedule(root) {
   });
 }
 const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('narration.css',import.meta.url).href;document.head.append(style);
-scan(document.body);
+const narrationRoot = document.getElementById(script?.dataset.narrationRoot || '') || document.body;
+scan(narrationRoot);
 new MutationObserver(records=>{
   for(const record of records){
     const parent=record.target.nodeType===1?record.target:record.target.parentElement;
@@ -264,6 +265,7 @@ new MutationObserver(records=>{
     }
     if(active && !active.button.isConnected)stop();
   }
-}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+}).observe(narrationRoot,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 window.addEventListener('pagehide',stop);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&active)stop();});
+

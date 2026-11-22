@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml/badge.svg)](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml) · [Open it on brandonfhuang.com](https://brandonfhuang.com/projects/play/memory/)
 
-Explore how ideal model weights, a KV cache and an assumed reserve use an estimated memory budget. The Inside an Inference accounting trace shows context growth, overflow and which allocations change when one input changes. It does not execute a model or measure device memory.
+Open a letter from your sister, wind the harbor log and light a pier for the last ferry. The story uses the workshop’s memory calculator to determine where the reel catches and which pages each reader can hold. Open the workshop to inspect the weights, text cache and assumed reserve. All figures are calculated estimates.
 
 From the repository root, run `python -m http.server 8000` and open [Memory Crate](http://localhost:8000/memory/).
 

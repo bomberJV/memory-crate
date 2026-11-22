@@ -1,8 +1,87 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101710"><title>Memory Crate — Brandon Frank Han-Chween Huang</title><meta name="description" content="Trace estimated weights, KV cache and assumed reserve as context grows beyond a memory budget. An accounting study, with packing challenges and inspectable dependencies."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
-<body><a class="skip-link" href="#inference-trace">Skip to the allocation trace</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
-<main><div class="page-opening"><div><p class="kicker">06 / THE HARDWARE PUZZLE</p><h1>Will<br> <em>it fit?</em></h1><p class="intro">Memory Crate: open up the memory budget. Follow the cache as context grows, change one constraint, and see what stays fixed.</p></div><div class="opening-badge" aria-hidden="true"><span>HANDLE WITH</span><b>care.</b><span>MEMORY CRATE / 006</span></div></div>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101e26"><title>The Last Ferry | Memory Crate by Brandon Frank Han-Chween Huang</title><meta name="description" content="Light the right pier for the last ferry home. A playable harbor story about what an AI reader can hold, with an interactive memory workshop."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="ferry.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" data-narration-root="memory-workshop" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
+<body><a class="skip-link" href="#crossing">Skip to the ferry</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
+<main>
+<section class="ferry-story" id="crossing" aria-labelledby="crossing-title">
+  <div class="crossing-head">
+    <div><p class="ferry-series">Memory Crate</p><h1 id="crossing-title">The last <em>ferry.</em></h1></div>
+    <p class="crossing-deck">Nell is on the last ferry home. Three piers face the water. Your sister left a clue about which one to light.</p>
+  </div>
 
+  <div class="crossing-grid">
+    <div class="ferry-desk">
+      <div class="story-page" data-story-page="start">
+        <h2>A letter from <em>Nell</em></h2>
+        <p>There is an envelope under the lamp. You know the handwriting before you turn it over.</p>
+        <div class="ferry-js" hidden><button class="letter-envelope" id="open-letter" type="button"><span class="envelope-address">For you</span><span class="envelope-seal" aria-hidden="true">N</span><span class="envelope-action">Open the envelope</span></button></div>
+      </div>
+      <div class="story-page" data-story-page="reading" hidden>
+        <h2 tabindex="-1">Her meeting <em>place</em></h2>
+        <blockquote class="nell-letter"><p id="nell-message"></p><cite>Nell</cite></blockquote>
+        <p>Tonight’s bell list is on the last page of the harbor log. Wind the log through the reader to reach it.</p>
+        <button class="ferry-primary" type="button" id="wind-log">Wind the log</button>
+      </div>
+      <div class="story-page" data-story-page="blocked" hidden>
+        <h2 tabindex="-1">The reel <em>catches.</em></h2>
+        <p id="block-copy"></p>
+        <p>How will you get the two clues together?</p>
+        <div class="recovery-buttons">
+          <button type="button" data-recover="compact"><strong>Use the compact reader</strong><span>Make room for the whole log.</span></button>
+          <button type="button" data-recover="slips"><strong>Keep only two slips</strong><span>Thread Nell’s note and the bell list. Set the middle aside.</span></button>
+        </div>
+      </div>
+      <div class="story-page" data-story-page="signal" hidden>
+        <h2 tabindex="-1">Light her <em>pier.</em></h2>
+        <p class="clue-recap" id="clue-recap"></p>
+        <div class="bell-register"><h3>Tonight’s bell list</h3><dl id="bell-list"></dl></div>
+        <p>Touch a pier lamp in the picture to signal the ferry.</p>
+        <div class="bell-feedback" id="bell-feedback" role="status"></div>
+      </div>
+      <div class="story-page" data-story-page="home" hidden>
+        <h2 tabindex="-1">There you <em>are.</em></h2>
+        <p id="arrival-copy"></p>
+        <blockquote class="arrival-quote">“I kept looking for that light.”<cite>Nell</cite></blockquote>
+        <details class="margin-note" id="margin-note"><summary>“Did you see what I wrote about the gull?”</summary>
+          <div id="margin-kept" hidden><p class="note-source">From the middle of the log</p><p>“A gull rode the whole way on the roof. I named him Captain. He ate half my sandwich.”</p><cite>Nell</cite></div>
+          <p id="margin-missing" hidden>You unfold the two slips. You have her message and the bell list. The page about the gull was somewhere in the middle. You can try the other way to read it.</p>
+        </details>
+        <div class="arrival-actions"><button type="button" id="play-again" class="ferry-primary">Try a new signal</button><button type="button" id="try-other-route">Try the other way</button></div>
+      </div>
+      <noscript><div class="paper-crossing"><p>Nell’s note says, “Meet me at the pier that rings twice.” Tonight the clock rings once, the glasshouse twice and the mill three times.</p><details><summary>Where is Nell waiting?</summary><p>At the glasshouse. In the memory example, 809 pieces of the log fit before the reader fills up. A compact reader can hold all 8,192 pieces. Choosing only the two clue slips also works.</p></details></div></noscript>
+    </div>
+    <figure class="ferry-scene" id="ferry-scene" data-phase="start">
+      <div class="harbor-frame" id="harbor-frame">
+        <img class="harbor-art" src="harbor.webp" width="1536" height="1024" alt="Across a misty harbor stand a clock tower on the left, a glasshouse in the middle and a windmill on the right.">
+        <div class="harbor-mist" aria-hidden="true"></div>
+        <div class="harbor-ripples" aria-hidden="true"></div>
+        <div class="ship-position" id="ship-position" aria-hidden="true"><div class="ship-float"><i class="ship-wake"></i><img src="ferry.webp" alt="" class="ship-cutout"></div></div>
+        <div class="pier-lights" id="pier-lights" role="group" aria-label="Pier lamps">
+          <button class="pier-lamp pier-clock" type="button" data-pier="clock" aria-label="Light Clock Pier" disabled><span class="lamp-bulb" aria-hidden="true"></span><span class="pier-label">Clock Pier</span></button>
+          <button class="pier-lamp pier-glass" type="button" data-pier="glass" aria-label="Light Glasshouse" disabled><span class="lamp-bulb" aria-hidden="true"></span><span class="pier-label">Glasshouse</span></button>
+          <button class="pier-lamp pier-mill" type="button" data-pier="mill" aria-label="Light Mill Pier" disabled><span class="lamp-bulb" aria-hidden="true"></span><span class="pier-label">Mill Pier</span></button>
+        </div>
+      </div>
+      <figcaption class="harbor-caption"><span id="water-caption">A ribbon of fog hangs over the last crossing.</span><div class="harbor-options ferry-js" hidden><button type="button" id="ferry-motion" aria-pressed="true">Motion on</button><button type="button" id="ferry-sound" aria-pressed="false">Sound off</button></div></figcaption>
+    </figure>
+  </div>
+
+  <section class="log-drive" id="log-drive" aria-labelledby="reel-title" hidden>
+    <div class="drive-head"><h3 id="reel-title">The harbor log</h3><p id="drive-count"></p></div>
+    <blockquote class="running-excerpt"><cite id="excerpt-label"></cite><span id="excerpt-line"></span></blockquote>
+    <div class="reel-machine" aria-hidden="true"><i class="reel-wheel"></i><div class="feed-window"><div class="feed-marks" id="feed-marks"></div><div class="feed-held" id="feed-held"></div><div class="feed-edge" id="feed-edge"></div></div><i class="reel-wheel"></i></div>
+    <div id="ferry-hand-controls" class="hand-controls"><label for="ferry-scrub">Turn the reel by hand</label><input id="ferry-scrub" type="range" min="0" max="8192" step="1" value="0"><div class="fine-controls"><button type="button" id="one-back">Back one piece</button><button type="button" id="one-forward">Forward one piece</button></div></div>
+    <p id="reel-reading"></p>
+  </section>
+  <details class="crossing-math" id="crossing-math">
+    <summary>How much could the reader hold?</summary>
+    <p>The ferry and its two clues are a story. The reel illustrates an AI memory estimate. Each piece stands for one token, a small unit of text. The log is assigned 8,192 positions. The printed excerpts are written for the puzzle.</p>
+    <div class="ferry-js" hidden><p id="memory-receipt"></p><dl class="receipt-allocations" id="receipt-allocations"></dl></div>
+    <p>The reader represents 8 billion model parameters. Choosing the compact reader changes their storage from 16 bits to 8 bits each. Both readers use the same 16-bit memory for the text they hold. This calculation uses a 16 GiB budget and assumes 1 GiB is set aside. No model runs in this story.</p>
+  </details>
+</section>
+
+<details class="ferry-workshop" id="memory-workshop"><summary>Open the memory workshop</summary>
+<div class="ferry-workshop-body">
 <section id="inference-trace" class="inference-trace" aria-labelledby="trace-title">
   <div class="trace-heading"><div><p class="kicker">INSIDE AN INFERENCE / MEMORY ACCOUNTING</p><h2 id="trace-title">The weights stay.<br>The context <em>grows.</em></h2></div><p>One shared set of weights. A cache for each sequence. Change a constraint and trace exactly which allocations move.</p></div>
   <p class="trace-scope"><strong>Calculated storage · hypothetical model.</strong> This study does not execute a model or measure device memory, latency or answer quality.</p>
@@ -40,5 +119,7 @@
 <section class="precision-section" aria-labelledby="precision-title"><div class="section-line"><div><p class="kicker">THE SAME BUILD / FOUR WAYS</p><h2 id="precision-title">What do fewer bits buy you?</h2></div><p>Same model, cache and reserve.<br> Only weight precision changes.</p></div><div id="precision-comparison" class="precision-comparison" aria-label="Compare weight precision"></div></section>
 <section id="pinned-section" class="pinned-section" aria-labelledby="pinned-title" hidden><div class="section-line"><h2 id="pinned-title">Two ideas, side by side.</h2><button id="clear-pins" type="button">Clear comparison</button></div><div id="pinned-builds" class="pinned-builds"></div></section>
 <details class="model-notes"><summary>The math, the assumptions, and what this does not tell you</summary><div class="notes-grid"><div><h3>Where the memory goes.</h3><p><strong>Ideal weight storage:</strong> parameters × bits ÷ 8 ÷ 2³⁰ GiB. A billion parameters means 10⁹ parameters; a GiB means 2³⁰ bytes.</p><p><strong>Illustrative KV cache:</strong> 2 × layers × KV heads × head dimension × cached tokens × sequences × bytes per value. This is a conventional full-attention key/value cache calculation.</p><p><strong>Manual reserve:</strong> a chosen allowance that is added to the total. It is not calculated from a runtime.</p></div><div><h3>The assumptions in this example.</h3><p>The cache always assumes <strong>32 layers, 8 KV heads, 128 dimensions per head and 16-bit cache values</strong>. The parameter count changes only the weights. These independent knobs do not describe a named or benchmarked model.</p><p>The estimate omits allocator behavior, activations, intermediate buffers, quantization metadata, architecture-specific caches, and device memory already in use. Real systems may partition or offload storage. A green crate is a solved arithmetic budget, <strong>not a guarantee that inference will run</strong>.</p><p>More bits does not automatically mean a better answer. The puzzle’s “highest precision” rule is a teaching objective, not a universal deployment recommendation.</p><a href="https://huggingface.co/docs/transformers/en/cache_explanation" target="_blank" rel="noopener noreferrer">Read the cache shape reference ↗</a></div></div></details>
-<p id="storage-note" class="note">Solved briefs and your last workshop build stay in this browser.</p></main><footer><span>A BRANDON HUANG PROJECT</span><a href="../README.md">Project documentation →</a><a href="../index.html">Back to projects ↗</a></footer></body></html>
+<p id="storage-note" class="note">Solved briefs and your last workshop build stay in this browser.</p>
+</div></details>
+</main><footer><span>By Brandon Frank Han-Chween Huang</span><a href="../README.md">Project documentation →</a><a href="../index.html">Back to projects ↗</a></footer></body></html>
 
