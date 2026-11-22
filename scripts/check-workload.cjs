@@ -15,12 +15,13 @@ const single = path.join(temp, 'preview.html');
 execFileSync(process.execPath, [path.join(__dirname, 'build-preview.mjs'), single]);
 const routes = new Map([['/preview.html', single], ['/memory/', path.join(repo, 'memory/index.html')]]);
 for (const [directory, names] of Object.entries({
-  memory: ['app.js', 'app.css', 'model.js', 'trace.js', 'workload-model.js', 'workload-plot.js', 'workload.js', 'workload.css'],
+  memory: ['app.js', 'app.css', 'model.js', 'trace.js', 'workload-model.js', 'workload-plot.js', 'workload.js', 'workload.css', 'first-token.css', 'first-token.js'],
+  experiment: ['recorded-run.json'],
   shared: ['core.js', 'play.css', 'narration.js', 'narration.css', 'narration-voice.js', 'opus-frames.js', 'symbols.woff']
 })) {
   for (const name of names) routes.set('/' + directory + '/' + name, path.join(repo, directory, name));
 }
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff': 'font/woff' };
+const mime = { '.json':'application/json', '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff': 'font/woff' };
 const server = http.createServer((req, res) => {
   const file = routes.get(new URL(req.url, 'http://localhost').pathname);
   if (!file || !fs.existsSync(file)) return res.writeHead(404).end();
@@ -36,6 +37,34 @@ async function capture(page, name) {
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await page.screenshot({ path: path.join(output, name + '.jpg'), type: 'jpeg', quality: 78 });
 }
+async function checkRecording(page, phone) {
+  const byId = id => page.locator('#'+id);
+  await byId('ft-play').waitFor();
+  await capture(page, phone ? 'phone-first-token':'desktop-first-token');
+  assert.equal(await byId('ft-factor').textContent(), '11.5×');
+  await byId('ft-first').click();
+  const answers = page.locator('.ft-answer');
+  assert.equal(await answers.nth(0).innerText(), 'The');
+  assert.match(await answers.nth(1).innerText(), /Reading/);
+  await byId('ft-next').click();
+  assert.equal(await answers.nth(1).innerText(), 'The');
+  if(phone) await byId('ft-edit').tap(); else { await byId('ft-edit').focus(); await page.keyboard.press('Enter'); }
+  assert.match(await answers.nth(0).innerText(), /Platform 4/);
+  assert.match(await answers.nth(1).innerText(), /Platform 9/);
+  await byId('ft-play').click();
+  await page.waitForFunction(() => document.querySelector('#ft-play').textContent === 'Replay both runs');
+  assert.match(await answers.nth(1).innerText(), /Platform 9/);
+  await byId('ft-edit').click();
+  await page.locator('.ft-evidence > summary').click();
+  assert.match(await byId('ft-stats').innerText(), /1,478 ms/);
+  const download = page.waitForEvent('download');
+  await byId('ft-download').click();
+  const file=await download;
+  assert.equal(file.suggestedFilename(),'first-token-recorded-run.json');
+  const record=JSON.parse(fs.readFileSync(await file.path(),'utf8'));
+  assert.equal(record.cases.long.runs.length,5);
+  await page.locator('.ft-evidence > summary').click();
+}
 async function runWorkload(browser, url, phone) {
   const context = await browser.newContext({
     viewport: phone ? { width: 390, height: 844 } : { width: 1400, height: 900 },
@@ -45,6 +74,8 @@ async function runWorkload(browser, url, phone) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(url);
+  await checkRecording(page, phone);
+  await page.locator("#workload").evaluate(e => e.scrollIntoView({behavior:"instant"}));
   await page.locator('#load-peak').waitFor();
   const textOf = selector => page.locator(selector).innerText();
   const click = async selector => {
@@ -149,6 +180,7 @@ async function runWorkload(browser, url, phone) {
       const page = await browser.newPage({ viewport: { width, height: 800 } });
       await page.goto(base + '/preview.html');
       await page.locator('#load-peak').waitFor();
+      await page.locator('#ft-play').waitFor();
       await checkWidth(page);
       await page.close();
     }

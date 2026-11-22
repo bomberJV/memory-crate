@@ -1,3 +1,4 @@
+import { mountFirstToken } from './first-token.js';
 import { mountWorkload } from './workload.js';
 import { safeLoad, safeSave } from '../shared/core.js';
 import { DEFAULT_BUILD, TRACE_BUILD, MISSIONS, accounting, precisionOptions, evaluateMission, sanitizeBuild, isValidBuild, sanitizeProgress, cellSegments, formatGiB } from './model.js';
@@ -232,6 +233,7 @@ $('#clear-pins').onclick = () => { pinned = []; renderPins(); persist(); $('#pin
 $('#next-mission').onclick = () => { const next = MISSIONS.find(item => !solved.includes(item.id)); chooseMission(next?.id || 'sandbox'); missionButtons.get(next?.id || 'sandbox').focus({ preventScroll: true }); };
 render();
 mountWorkload();
+mountFirstToken();
 
 function openLinkedWorkshop() {
   const section = document.getElementById('memory-workshop');
