@@ -1,5 +1,6 @@
 import { safeLoad, safeSave } from '../shared/core.js';
-import { DEFAULT_BUILD, MISSIONS, accounting, precisionOptions, evaluateMission, sanitizeBuild, isValidBuild, sanitizeProgress, cellSegments, formatGiB } from './model.js';
+import { DEFAULT_BUILD, TRACE_BUILD, MISSIONS, accounting, precisionOptions, evaluateMission, sanitizeBuild, isValidBuild, sanitizeProgress, cellSegments, formatGiB } from './model.js';
+import { createTrace } from './trace.js';
 
 const $ = selector => document.querySelector(selector);
 const STORAGE_KEY = 'brandon-memory-crate-v2';
@@ -10,6 +11,32 @@ let solved = sanitizeProgress(saved?.solved);
 let pinned = Array.isArray(saved?.pinned) ? saved.pinned.filter(isValidBuild).slice(0, 2).map(value => sanitizeBuild(value)) : [];
 let missionId = 'sandbox';
 let hasChecked = false;
+let traceBaseline = { ...build };
+const renderTrace = createTrace({
+  onChange: change,
+  onExample: () => {
+    missionId = 'sandbox';
+    build = { ...TRACE_BUILD };
+    traceBaseline = { ...build };
+    hasChecked = false;
+    $('#trace-action-status').textContent = 'Context example loaded. Baseline: zero cached tokens, 8B parameters, 16-bit weights, a 16 GiB budget and 1 GiB assumed reserve.';
+    $('#check-result').textContent = 'Context example loaded. Increase cached tokens to cross the estimated budget.';
+    render(); persist();
+  },
+  onBaseline: () => {
+    traceBaseline = { ...build };
+    $('#trace-action-status').textContent = 'Current build saved as the comparison baseline for this session.';
+    render();
+  },
+  onReset: () => {
+    missionId = 'sandbox';
+    build = { ...traceBaseline };
+    hasChecked = false;
+    $('#trace-action-status').textContent = 'Restored the baseline in free play.';
+    $('#check-result').textContent = 'Build restored from the trace baseline.';
+    render(); persist();
+  }
+});
 const colors = { weights: '#cde991', cache: '#7abfc9', reserve: '#daa9bc', empty: '#1b291a' };
 const cells = Array.from({ length: 64 }, () => {
   const cell = document.createElement('span');
@@ -152,7 +179,7 @@ function renderBrief() {
 function render() {
   const result = accounting(build);
   $('#crate').classList.toggle('over', !result.fits);
-  $('#crate-tag').textContent = result.fits ? 'WITHIN BUDGET' : 'OVER CAPACITY';
+  $('#crate-tag').textContent = result.fits ? 'WITHIN ESTIMATE' : 'ESTIMATE EXCEEDED';
   $('#build-label').textContent = `${build.parameters}B / ${build.bits}-BIT / ${build.capacity} GiB`;
   $('#memory-size').textContent = formatGiB(result.weights);
   $('#total-size').textContent = `${formatGiB(result.total)} GiB`;
@@ -170,6 +197,7 @@ function render() {
   document.querySelectorAll('[data-parameter]').forEach(button => button.setAttribute('aria-pressed', String(build[button.dataset.parameter] === Number(button.dataset.value))));
   document.querySelectorAll('[data-select]').forEach(select => select.value = String(build[select.dataset.select]));
   renderCells(result); renderBrief(); renderPrecision(); renderPins();
+  renderTrace(build, traceBaseline, { locked: Boolean(mission()) });
 }
 function testBuild() {
   hasChecked = true;
@@ -202,3 +230,4 @@ $('#pin-build').onclick = () => {
 $('#clear-pins').onclick = () => { pinned = []; renderPins(); persist(); $('#pin-build').focus({ preventScroll: true }); $('#check-result').textContent = 'Comparison cleared. Your current build is unchanged.'; };
 $('#next-mission').onclick = () => { const next = MISSIONS.find(item => !solved.includes(item.id)); chooseMission(next?.id || 'sandbox'); missionButtons.get(next?.id || 'sandbox').focus({ preventScroll: true }); };
 render();
+
