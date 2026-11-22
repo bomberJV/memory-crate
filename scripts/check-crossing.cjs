@@ -59,7 +59,7 @@ async function play(browser, base, mobile) {
   await picture(page, mobile ? 'phone-opening' : 'desktop-opening');
   if (mobile) {
     const button = await page.locator('#open-letter').boundingBox();
-    assert.ok(button.y + button.height <= 844, 'Envelope reachable on the first phone screen.');
+    assert.ok(button.y >= 0 && button.y + button.height <= 844, 'Envelope on the first phone screen: ' + JSON.stringify(button));
     await page.locator('#open-letter').tap();
   } else {
     await page.locator('#open-letter').focus();

@@ -82,14 +82,19 @@ body:has(.ferry-story) > main {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  width: 100%;
+  flex: none;
   aspect-ratio: 3/2;
   background: linear-gradient(#496378,#eba777 47%,#203c4f 60%,#163344);
 }
 
 .harbor-art {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .harbor-mist, .harbor-ripples {
@@ -841,9 +846,11 @@ body:has(.ferry-story) > main {
   .story-page h2 {
     font-size:2.04rem;
   }
+  .ferry-story[data-phase=start] .crossing-grid,
   .ferry-story[data-phase=signal] .crossing-grid {
     grid-template-areas:'desk' 'scene';
   }
+  .ferry-story[data-phase=start] .ferry-desk,
   .ferry-story[data-phase=signal] .ferry-desk {
     border-top:0;
     border-bottom:1px solid #45575c;
