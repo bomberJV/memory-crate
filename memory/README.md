@@ -70,7 +70,7 @@ https://huggingface.co/docs/transformers/en/cache_explanation
 
 ## Inside an Inference: first milestone
 
-The delivered scope is **memory accounting and dependencies**. No model weights or tokenizer are downloaded, no prompt is executed, and no runtime memory or latency is measured.
+The 8B workshop estimates storage and dependencies. Its reserve is an assumption. The separate opening chapter replays actual CPU inference from a smaller model.
 
 The guided fixture starts with 8B parameters at 16-bit weight precision, a 16-GiB budget, zero cached tokens, one sequence and a 1-GiB assumed reserve. It initially needs approximately 15.901 GiB. Adding 8,192 cached tokens adds exactly 1 GiB of cache, bringing the total to approximately 16.901 GiB and exceeding the budget by approximately 0.901 GiB. Shared weights and assumed reserve remain fixed.
 
@@ -95,7 +95,7 @@ The trace baseline lasts for the current page session:
 
 **The next project asks a different question.** The [medical AI research](https://github.com/bomberJV/medical-ai-research) concerns a different experiment, with its own models, data and protocol. Fitting this hypothetical memory budget is not evidence of reliability or accuracy, and changing this example's precision does not alter any medical result.
 
-### Later execution milestone — not implemented
+### Recorded execution
 
 [The separate CPU experiment](../experiment/README.md) implements I-04–I-06 with pinned weights and tokenizer, raw repeats, memory scope, prefill and decode.
 

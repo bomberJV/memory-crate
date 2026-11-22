@@ -15,3 +15,7 @@ The raw file contains initialization time after model download, the first genera
 Measured KV payload sums live key/value tensor elements multiplied by their actual element sizes. The independent estimate uses the checked-in model dimensions and FP32 cache precision. Process RSS is sampled after each forward pass and is a process-wide snapshot. It includes Python and runtime allocations. Parameter payload sums unique model parameters. Peak RSS, device memory, power and answer quality were not measured. This 135M experiment is distinct from the hypothetical 8B teaching fixture.
 
 [Recording workflow](https://github.com/bomberJV/memory-crate/actions/runs/45038204630) · [Raw recordings](recorded-run.json)
+
+## Homepage export
+
+Run `node scripts/build-homepage.mjs PUBLIC_DIRECTORY` to regenerate the compact reel cue sheet and external-script chapter page from this exact recording. The red reel reads only the cue sheet. Opening the deeper experiment loads its record, and the offline preview embeds the same JSON. The portfolio integration lives in [brandon-studio #404](https://github.com/bomberJV/brandon-studio/pull/404).
