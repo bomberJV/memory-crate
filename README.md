@@ -2,6 +2,8 @@
 
 [![Tests](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml/badge.svg)](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml) · [Open it on brandonfhuang.com](https://brandonfhuang.com/projects/play/memory/)
 
+Replay a short departure notice and a full station board through the same small language model. Change a single digit and inspect the actual output. [Capture protocol and raw repetitions](experiment/README.md)
+
 Inspect the token that pushes a third request over a 24 GiB memory budget. Move its arrival, change weight precision, or shorten its context. The chart and the original packing workshop use the same calculator for shared weights, private KV caches and an assumed reserve.
 
 From the repository root, run `python -m http.server 8000` and open [Memory Crate](http://localhost:8000/memory/).

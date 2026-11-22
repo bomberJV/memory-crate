@@ -1,10 +1,35 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10171d"><title>Inside an Inference | Memory Crate by Brandon Frank Han-Chween Huang</title><meta name="description" content="Inspect three overlapping inference requests. Change the schedule, weight precision and context lengths to see when the estimated memory budget is exceeded."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="workload.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" data-narration-root="memory-workshop" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
-<body><a class="skip-link" href="#workload">Skip to the workload</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10171d"><title>Inside an Inference | Memory Crate by Brandon Frank Han-Chween Huang</title><meta name="description" content="Replay the first tokens from two measured model runs, change an input digit, and inspect the memory budget of three concurrent requests."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="workload.css"><link rel="stylesheet" href="first-token.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" data-narration-root="memory-workshop" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
+<body><a class="skip-link" href="#first-token">Skip to the experiment</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
 <main>
+<section id="first-token" class="ft" data-record="../experiment/recorded-run.json" aria-labelledby="ft-title">
+  <div class="ft-mast"><span>Inside an Inference</span><span>Recorded CPU experiment</span></div>
+  <div class="ft-head"><h1 id="ft-title">Before the first <em>word.</em></h1><p>Give the same model one departure notice or the entire station board. Ask it where to catch the train to Lisbon.</p></div>
+  <div class="ft-live" hidden>
+    <div class="ft-stage">
+      <div class="ft-stage-head"><h2>The race to <em>“The”</em></h2><div><span id="ft-factor"></span><small>longer to first token</small></div></div>
+      <div id="ft-lanes"></div>
+      <div class="ft-control">
+        <button id="ft-play" type="button">Replay both runs</button>
+        <label for="ft-time">Recorded time</label><input id="ft-time" type="range" min="0" max="1000" value="1000" step="1"><output id="ft-clock" for="ft-time"></output>
+      </div>
+      <div class="ft-jumps"><button type="button" id="ft-first">When the first answer starts</button><button type="button" id="ft-next">When the second starts</button></div>
+    </div>
+    <div class="ft-amend"><div><small>Last entry on the full board</small><p>23:40 &nbsp; Lisbon &nbsp;·&nbsp; Platform <strong id="ft-platform">4</strong></p></div><button type="button" id="ft-edit" aria-pressed="false">Change 4 to 9</button></div>
+    <p class="ft-caption" id="ft-caption"></p>
+    <details class="ft-evidence"><summary>Inspect the recording</summary>
+      <div class="ft-proof"><p id="ft-device"></p><div class="ft-table"><table><caption>Measurements from five warm runs per input</caption><thead><tr><th>Input</th><th>First token, median [min–max]</th><th>Decode step, median</th><th>KV tensors after prefill</th></tr></thead><tbody id="ft-stats"></tbody></table></div>
+      <p id="ft-method"></p><details><summary>Read the exact prompts and output token IDs</summary><pre id="ft-input"></pre></details>
+      <p class="ft-links"><button id="ft-download" type="button">Download raw runs</button><a href="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/tree/12fd25f77366fa6b3b4b768ec3050bf629380bac">Model and tokenizer</a><a href="https://github.com/bomberJV/memory-crate/pull/3">Experiment source</a></p></div>
+    </details>
+  </div>
+  <noscript><p>In five warm CPU runs, the median first token arrived after 128 ms for 75 input tokens and 1,478 ms for 727. Both outputs identified platform 4. Changing the platform digit on the full board changed the recorded answer to platform 9.</p></noscript>
+  <a class="ft-down" href="#workload">Explore the 8B memory estimate ↓</a>
+</section>
+
 <section id="workload" class="workload-lab" aria-labelledby="workload-title">
   <div class="workload-heading">
-    <div><p class="workload-series">Memory Crate / Inside an Inference</p><h1 id="workload-title">The third <em>request.</em></h1></div>
+    <div><p class="workload-series">Memory Crate / Inside an Inference</p><h2 id="workload-title">The third <em>request.</em></h2></div>
     <p>Two 32,768-token requests fit in a 24 GiB memory budget. An 8,192-token request arrives while both are still in memory. When does it cross the line?</p>
   </div>
 
