@@ -1,6 +1,6 @@
 # Memory Crate
 
-An illustrated harbor mystery and memory-packing workshop by Brandon Frank Han-Chween Huang. In *The Last Ferry*, Nell left a note about where to meet her. The bell list that identifies the pier is at the far end of a paper log. Wind the reel, decide which pages to keep and use a lamp to guide her in.
+An interactive inference-memory study and packing workshop by Brandon Frank Han-Chween Huang. The opening experiment follows three independent requests through one shared model. Inspect the first token over budget and try different arrival orders, weight precisions and prompt lengths.
 
 Plain HTML, CSS and browser JavaScript. No build step, remote services, vendor model presets, or runtime dependencies.
 
@@ -14,15 +14,22 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000/memory/`. ES modules require HTTP; do not open `index.html` directly from the filesystem. The shared stylesheet and browser helpers live in `../shared/`.
 
-For a self-contained edition, run `node scripts/build-preview.mjs preview.html` and open that file in a browser. It embeds the harbor, ferry, controls, bells and calculator. Recorded workshop narration is available in the hosted edition.
+For a self-contained edition, run `node scripts/build-preview.mjs preview.html` and open the file in a browser. It embeds the chart, calculator and workshop. The hosted edition includes separate workshop narration.
 
-### The last ferry
+### The third request
 
-The opening and closing clues occupy 128 positions each in a fictional 8,192-token log. The excerpts are authored for the story. The original reader starts at 16-bit weight precision with a 16 GiB budget and a 1 GiB assumed reserve. It can retain 809 positions. The next position needs 40,960 bytes more than the budget allows.
+The original plan uses 8 billion parameters at 16 bits, a 24 GiB budget and an assumed 1 GiB reserve. A and B each reach 32,768 cached tokens. They occupy 4 GiB each and share a single 14.901 GiB set of weights. The first 809 positions of C also fit. At token 810, the required allocation exceeds the budget by 40,960 bytes.
 
-The compact reader uses 8-bit weights and keeps all 8,192 positions. The two-slip route retains positions 1–128 and 8,065–8,192 with the original weights. Both preserve the clues. A handwritten note at position 4,316 is available only with the complete roll. The calculator determines each allocation. Try a new signal to play two further crossings with different bell lists.
+| Plan | Peak required | Consequence |
+| --- | --- | --- |
+| Original | 24.901 GiB | A, B and the full 8,192-token C overlap. |
+| Wait for A | 23.901 GiB | C arrives at event 7 after A releases. All 73,728 requested tokens and the weight precision are preserved. |
+| Use 8-bit weights | 17.451 GiB | All requests keep their original timing and lengths. Peak KV cache remains 9 GiB. |
+| Trim C | 23.999916 GiB | C keeps 809 of its original 8,192 tokens. There are 90,112 bytes free at peak. |
 
-The lamps support touch and keyboard input. Bells are optional and their counts are also written on the page. Pause motion at the harbor, or use the operating system’s reduced-motion setting. A paper version of the mystery remains available when scripts are disabled.
+Scrub the plot or use the arrow keys on the event slider. Last fit and First excess inspect the two sides of the boundary. Drag the C handle to shift the complete request. Apply presets or edit the inputs at the same cursor position. The dashed outline shows the original allocation when the plan differs. Peak jumps to the earliest highest allocation. Replay begins only on request.
+
+The horizontal axis is a synthetic order of events. One interval admits the selected number of whole tokens, and a release drops that request's cache immediately. A request arriving at the same event sees the released space. Each private cache uses the existing 32-layer geometry. Because the geometry is identical, summing cached tokens across requests is equivalent to summing their private cache bytes. Shared weights and reserve are counted once. The calculation excludes prefix sharing, paging and runtime-specific layout. The chart connects the evaluated event boundaries, while the cursor, peak and first excess evaluate exact whole-token positions. There is no measured latency or device memory in this fixture.
 
 ## What you can do
 
@@ -101,7 +108,7 @@ The reserve includes neither a calculated safety margin nor a measured runtime g
 - `index.html`: page structure and accessible controls.
 - `app.css`: tactile crate, allocation legend, challenges and responsive layout.
 - `app.js`: UI state, persistence, challenge feedback and comparisons.
-- `ferry.js` and `ferry-model.js` control the story, retained passages and bell signals. `ferry.css`, `harbor.webp` and `ferry.webp` provide its illustrated setting. Both illustrations were generated for this fictional harbor.
+- `workload-model.js` evaluates the event schedule using the existing calculator. `workload.js`, `workload-plot.js` and `workload.css` present the chart, request lanes, comparisons and byte receipts.
 - `trace.js`: accessible allocation trace, context series and calculation receipt using the shared model.
 - `model.js`: pure byte/unit accounting, validation, dependency traces, context fixtures, allocation segmentation and challenge rules.
 - `../shared/`: shared page styling and safe localStorage helpers.
@@ -135,7 +142,7 @@ The PR records the actual test commands, browser checks and any remaining covera
 
 ### Reproducing the checks
 
-`npm test` runs the arithmetic, boundary, persistence and challenge tests together with the ferry fixtures in `tests/ferry.test.mjs`. Those fixtures check the exact spill at position 810, both recovery routes, the retained margin note and all three destinations.
+`npm test` runs the arithmetic, persistence and challenge checks alongside `tests/workload.test.mjs`. The workload fixtures cover unequal private caches, shared weights, the one-token boundary, each comparison, simultaneous release/admission, empty inputs and reserve-only changes.
 
-`scripts/check-crossing.cjs` exercises the hosted page and the single-file edition with Chrome and Playwright. It checks desktop and phone layouts, keyboard and touch input, both routes, the margin note, replay, reduced motion, the paper version, the separate medical handoff and the workshop reset. Pass an output directory to keep screenshots. This check uses a test-only installation of `playwright-core` and the Chrome stable browser.
+`scripts/check-workload.cjs` exercises both the mounted page and the single-file edition. The browser checks cover desktop and narrow layouts, pointer and touch input, the keyboard, replay, input validation, exact cursor jumps, original-plan overlays, schedule changes and the separate medical handoff. A static allocation example is available with scripts disabled. The check uses Chrome and a test-only installation of `playwright-core`; pass an output directory to retain screenshots.
 

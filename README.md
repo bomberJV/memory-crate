@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml/badge.svg)](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml) · [Open it on brandonfhuang.com](https://brandonfhuang.com/projects/play/memory/)
 
-Open a letter from your sister, wind the harbor log and light a pier for the last ferry. The story uses the workshop’s memory calculator to determine where the reel catches and which pages each reader can hold. Open the workshop to inspect the weights, text cache and assumed reserve. All figures are calculated estimates.
+Inspect the token that pushes a third request over a 24 GiB memory budget. Move its arrival, change weight precision, or shorten its context. The chart and the original packing workshop use the same calculator for shared weights, private KV caches and an assumed reserve.
 
 From the repository root, run `python -m http.server 8000` and open [Memory Crate](http://localhost:8000/memory/).
 

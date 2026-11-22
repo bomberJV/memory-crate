@@ -1,87 +1,73 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101e26"><title>The Last Ferry | Memory Crate by Brandon Frank Han-Chween Huang</title><meta name="description" content="Light the right pier for the last ferry home. A playable harbor story about what an AI reader can hold, with an interactive memory workshop."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="ferry.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" data-narration-root="memory-workshop" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
-<body><a class="skip-link" href="#crossing">Skip to the ferry</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10171d"><title>Inside an Inference | Memory Crate by Brandon Frank Han-Chween Huang</title><meta name="description" content="Inspect three overlapping inference requests. Change the schedule, weight precision and context lengths to see when the estimated memory budget is exceeded."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="workload.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" data-narration-root="memory-workshop" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
+<body><a class="skip-link" href="#workload">Skip to the workload</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
 <main>
-<section class="ferry-story" id="crossing" aria-labelledby="crossing-title">
-  <div class="crossing-head">
-    <div><p class="ferry-series">Memory Crate</p><h1 id="crossing-title">The last <em>ferry.</em></h1></div>
-    <p class="crossing-deck">Nell is on the last ferry home. Three piers face the water. Your sister left a clue about which one to light.</p>
+<section id="workload" class="workload-lab" aria-labelledby="workload-title">
+  <div class="workload-heading">
+    <div><p class="workload-series">Memory Crate / Inside an Inference</p><h1 id="workload-title">The third <em>request.</em></h1></div>
+    <p>Two 32,768-token requests fit in a 24 GiB memory budget. An 8,192-token request arrives while both are still in memory. When does it cross the line?</p>
   </div>
 
-  <div class="crossing-grid">
-    <div class="ferry-desk">
-      <div class="story-page" data-story-page="start">
-        <h2>A letter from <em>Nell</em></h2>
-        <p>There is an envelope under the lamp. You know the handwriting before you turn it over.</p>
-        <div class="ferry-js" hidden><button class="letter-envelope" id="open-letter" type="button"><span class="envelope-address">For you</span><span class="envelope-seal" aria-hidden="true">N</span><span class="envelope-action">Open the envelope</span></button></div>
+  <div class="workload-app" data-workload-ui hidden>
+    <div class="plan-strip" role="group" aria-label="Compare scenarios from the original workload">
+      <span>Compare from the original</span>
+      <div class="plan-buttons">
+        <button type="button" data-plan="original" aria-pressed="true">Original</button>
+        <button type="button" data-plan="queue" aria-pressed="false">Wait for A to finish</button>
+        <button type="button" data-plan="precision" aria-pressed="false">Use 8-bit weights</button>
+        <button type="button" data-plan="trim" aria-pressed="false">Trim request C</button>
       </div>
-      <div class="story-page" data-story-page="reading" hidden>
-        <h2 tabindex="-1">Her meeting <em>place</em></h2>
-        <blockquote class="nell-letter"><p id="nell-message"></p><cite>Nell</cite></blockquote>
-        <p>Tonight’s bell list is on the last page of the harbor log. Wind the log through the reader to reach it.</p>
-        <button class="ferry-primary" type="button" id="wind-log">Wind the log</button>
-      </div>
-      <div class="story-page" data-story-page="blocked" hidden>
-        <h2 tabindex="-1">The reel <em>catches.</em></h2>
-        <p id="block-copy"></p>
-        <p>How will you get the two clues together?</p>
-        <div class="recovery-buttons">
-          <button type="button" data-recover="compact"><strong>Use the compact reader</strong><span>Make room for the whole log.</span></button>
-          <button type="button" data-recover="slips"><strong>Keep only two slips</strong><span>Thread Nell’s note and the bell list. Set the middle aside.</span></button>
-        </div>
-      </div>
-      <div class="story-page" data-story-page="signal" hidden>
-        <h2 tabindex="-1">Light her <em>pier.</em></h2>
-        <p class="clue-recap" id="clue-recap"></p>
-        <div class="bell-register"><h3>Tonight’s bell list</h3><dl id="bell-list"></dl></div>
-        <p>Touch a pier lamp in the picture to signal the ferry.</p>
-        <div class="bell-feedback" id="bell-feedback" role="status"></div>
-      </div>
-      <div class="story-page" data-story-page="home" hidden>
-        <h2 tabindex="-1">There you <em>are.</em></h2>
-        <p id="arrival-copy"></p>
-        <blockquote class="arrival-quote">“I kept looking for that light.”<cite>Nell</cite></blockquote>
-        <details class="margin-note" id="margin-note"><summary>“Did you see what I wrote about the gull?”</summary>
-          <div id="margin-kept" hidden><p class="note-source">From the middle of the log</p><p>“A gull rode the whole way on the roof. I named him Captain. He ate half my sandwich.”</p><cite>Nell</cite></div>
-          <p id="margin-missing" hidden>You unfold the two slips. You have her message and the bell list. The page about the gull was somewhere in the middle. You can try the other way to read it.</p>
-        </details>
-        <div class="arrival-actions"><button type="button" id="play-again" class="ferry-primary">Try a new signal</button><button type="button" id="try-other-route">Try the other way</button></div>
-      </div>
-      <noscript><div class="paper-crossing"><p>Nell’s note says, “Meet me at the pier that rings twice.” Tonight the clock rings once, the glasshouse twice and the mill three times.</p><details><summary>Where is Nell waiting?</summary><p>At the glasshouse. In the memory example, 809 pieces of the log fit before the reader fills up. A compact reader can hold all 8,192 pieces. Choosing only the two clue slips also works.</p></details></div></noscript>
     </div>
-    <figure class="ferry-scene" id="ferry-scene" data-phase="start">
-      <div class="harbor-frame" id="harbor-frame">
-        <img class="harbor-art" src="harbor.webp" width="1536" height="1024" alt="Across a misty harbor stand a clock tower on the left, a glasshouse in the middle and a windmill on the right.">
-        <div class="harbor-mist" aria-hidden="true"></div>
-        <div class="harbor-ripples" aria-hidden="true"></div>
-        <div class="ship-position" id="ship-position" aria-hidden="true"><div class="ship-float"><i class="ship-wake"></i><img src="ferry.webp" alt="" class="ship-cutout"></div></div>
-        <div class="pier-lights" id="pier-lights" role="group" aria-label="Pier lamps">
-          <button class="pier-lamp pier-clock" type="button" data-pier="clock" aria-label="Light Clock Pier" disabled><span class="lamp-bulb" aria-hidden="true"></span><span class="pier-label">Clock Pier</span></button>
-          <button class="pier-lamp pier-glass" type="button" data-pier="glass" aria-label="Light Glasshouse" disabled><span class="lamp-bulb" aria-hidden="true"></span><span class="pier-label">Glasshouse</span></button>
-          <button class="pier-lamp pier-mill" type="button" data-pier="mill" aria-label="Light Mill Pier" disabled><span class="lamp-bulb" aria-hidden="true"></span><span class="pier-label">Mill Pier</span></button>
-        </div>
-      </div>
-      <figcaption class="harbor-caption"><span id="water-caption">A ribbon of fog hangs over the last crossing.</span><div class="harbor-options ferry-js" hidden><button type="button" id="ferry-motion" aria-pressed="true">Motion on</button><button type="button" id="ferry-sound" aria-pressed="false">Sound off</button></div></figcaption>
-    </figure>
-  </div>
 
-  <section class="log-drive" id="log-drive" aria-labelledby="reel-title" hidden>
-    <div class="drive-head"><h3 id="reel-title">The harbor log</h3><p id="drive-count"></p></div>
-    <blockquote class="running-excerpt"><cite id="excerpt-label"></cite><span id="excerpt-line"></span></blockquote>
-    <div class="reel-machine" aria-hidden="true"><i class="reel-wheel"></i><div class="feed-window"><div class="feed-marks" id="feed-marks"></div><div class="feed-held" id="feed-held"></div><div class="feed-edge" id="feed-edge"></div></div><i class="reel-wheel"></i></div>
-    <div id="ferry-hand-controls" class="hand-controls"><label for="ferry-scrub">Turn the reel by hand</label><input id="ferry-scrub" type="range" min="0" max="8192" step="1" value="0"><div class="fine-controls"><button type="button" id="one-back">Back one piece</button><button type="button" id="one-forward">Forward one piece</button></div></div>
-    <p id="reel-reading"></p>
-  </section>
-  <details class="crossing-math" id="crossing-math">
-    <summary>How much could the reader hold?</summary>
-    <p>The ferry and its two clues are a story. The reel illustrates an AI memory estimate. Each piece stands for one token, a small unit of text. The log is assigned 8,192 positions. The printed excerpts are written for the puzzle.</p>
-    <div class="ferry-js" hidden><p id="memory-receipt"></p><dl class="receipt-allocations" id="receipt-allocations"></dl></div>
-    <p>The reader represents 8 billion model parameters. Choosing the compact reader changes their storage from 16 bits to 8 bits each. Both readers use the same 16-bit memory for the text they hold. This calculation uses a 16 GiB budget and assumes 1 GiB is set aside. No model runs in this story.</p>
-  </details>
+    <div class="profile-grid">
+      <section class="profile-panel" aria-labelledby="profile-title">
+        <div class="plot-heading"><div><h2 id="profile-title">Memory across the workload</h2><p id="load-config"></p></div><div class="peak-readout"><span>Peak required</span><strong id="load-peak"></strong></div></div>
+        <div class="canvas-frame"><canvas id="load-plot" aria-hidden="true"></canvas></div>
+        <div class="time-controls"><button id="load-play" type="button">Replay trace</button><label for="load-scrub">Inspect event order</label><input type="range" id="load-scrub" min="0" max="327680" step="1" value="163840" aria-describedby="load-scrub-help"><span class="load-sr" id="load-scrub-help">Use the arrow keys to move one event at a time.</span></div>
+        <div class="lanes" aria-label="Request lifetimes in event order">
+          <div class="lane"><span>A</span><div class="lane-track"><i class="lane-block lane-a" id="lane-a"></i></div></div>
+          <div class="lane"><span>B</span><div class="lane-track"><i class="lane-block lane-b" id="lane-b"></i></div></div>
+          <div class="lane"><label for="load-arrival">C</label><div class="lane-track"><i class="lane-block lane-c" id="lane-c"></i><input type="range" id="load-arrival" min="3" max="8" step="1" value="4" aria-label="Request C arrival event" aria-describedby="lane-help"></div></div>
+        </div>
+        <div class="lane-caption"><p id="lane-help">Drag C’s handle to change when it starts.</p><span id="load-original-key" hidden><i></i> Original trace</span></div>
+      </section>
+
+      <aside class="cursor-panel" aria-labelledby="cursor-title">
+        <p class="load-overline">At the cursor</p><h2 id="cursor-title">Allocation</h2><p class="event-description" id="load-event"></p>
+        <dl class="allocation-ledger">
+          <div><dt><i class="swatch weight"></i>Shared weights</dt><dd id="load-weights"></dd></div>
+          <div><dt><i class="swatch reserve"></i>Assumed reserve</dt><dd id="load-reserve"></dd></div>
+          <div><dt><i class="swatch req-a"></i>Request A cache</dt><dd id="load-a"></dd></div>
+          <div><dt><i class="swatch req-b"></i>Request B cache</dt><dd id="load-b"></dd></div>
+          <div><dt><i class="swatch req-c"></i>Request C cache</dt><dd id="load-c"></dd></div>
+          <div class="ledger-total"><dt>Required</dt><dd id="load-total"></dd></div>
+        </dl>
+        <p id="load-state" class="load-state"></p>
+        <div class="cursor-jumps" role="group" aria-label="Inspect a position on the trace"><button type="button" id="load-last">Last fit</button><button type="button" id="load-first">First excess</button><button type="button" id="load-peak-jump">Peak</button></div>
+      </aside>
+    </div>
+
+    <section class="plan-result" aria-labelledby="plan-result-title"><div><p class="load-overline">Across the full workload</p><h2 id="plan-result-title"></h2><p id="plan-consequence"></p></div><div class="plan-difference"><span>Peak vs. original</span><strong id="plan-delta"></strong></div></section>
+
+    <details class="workload-detail" id="load-editor"><summary>Edit the workload</summary>
+      <form id="load-form"><div class="load-fields">
+        <label>Request A tokens<input id="edit-a" name="a" type="number" min="0" max="32768" step="1" required></label>
+        <label>Request B tokens<input id="edit-b" name="b" type="number" min="0" max="32768" step="1" required></label>
+        <label>Request C tokens<input id="edit-c" name="c" type="number" min="0" max="32768" step="1" required></label>
+        <label>Weight precision<select id="edit-bits" name="bits"><option value="4">4 bits</option><option value="8">8 bits</option><option value="16">16 bits</option></select></label>
+        <label>Estimated budget<select id="edit-capacity" name="capacity"><option value="16">16 GiB</option><option value="24">24 GiB</option><option value="32">32 GiB</option></select></label>
+        <label>Assumed reserve<select id="edit-reserve" name="reserve"><option value="0">0 GiB</option><option value="0.5">0.5 GiB</option><option value="1">1 GiB</option><option value="2">2 GiB</option></select></label>
+      </div><button type="submit" class="apply-load">Apply changes</button></form>
+    </details>
+    <details class="workload-detail" id="load-method"><summary>Inspect the calculation</summary><div class="load-method-body"><p id="load-unit-cost"></p><p id="load-byte-receipt"></p><p>The model and request lengths are hypothetical. The horizontal axis follows an authored event order. Each request grows to its target over one event interval and releases its entire private cache when it finishes. Shared-prefix reuse, paging, allocator overhead and quantization metadata are outside the estimate. Timing, hardware usage and answer quality require a measured run.</p></div></details>
+    <p class="load-scope">Estimated storage for an 8B model with independent request caches. The replay shows event order. No model runs in this view.</p>
+    <span id="load-announcement" class="load-sr" role="status"></span>
+  </div>
+  <noscript><div class="paper-load"><h2>The original workload</h2><p>Shared weights use 14.901 GiB. Two full request caches use 4 GiB each. With 1 GiB held in reserve, those requests use 23.901 GiB. The first 809 tokens of C still fit. Token 810 puts the estimate 40,960 bytes over budget.</p><p>The original peak is 24.901 GiB. Starting C after A releases its cache lowers the peak to 23.901 GiB and preserves all 73,728 requested tokens.</p></div></noscript>
 </section>
 
-<details class="ferry-workshop" id="memory-workshop"><summary>Open the memory workshop</summary>
-<div class="ferry-workshop-body">
+<details class="analysis-workshop" id="memory-workshop"><summary>Open the memory workshop</summary>
+<div class="analysis-workshop-body">
 <section id="inference-trace" class="inference-trace" aria-labelledby="trace-title">
   <div class="trace-heading"><div><p class="kicker">INSIDE AN INFERENCE / MEMORY ACCOUNTING</p><h2 id="trace-title">The weights stay.<br>The context <em>grows.</em></h2></div><p>One shared set of weights. A cache for each sequence. Change a constraint and trace exactly which allocations move.</p></div>
   <p class="trace-scope"><strong>Calculated storage · hypothetical model.</strong> This study does not execute a model or measure device memory, latency or answer quality.</p>

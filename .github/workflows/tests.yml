@@ -18,16 +18,16 @@ jobs:
         with:
           node-version: 22
       - run: npm test
-      - name: Check the crossing in Chrome
+      - name: Check the workload in Chrome
         run: |
-          npm install --prefix "$RUNNER_TEMP/ferry-checks" --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
-          NODE_PATH="$RUNNER_TEMP/ferry-checks/node_modules" node scripts/check-crossing.cjs "$RUNNER_TEMP/ferry-pictures"
+          npm install --prefix "$RUNNER_TEMP/workload-checks" --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
+          NODE_PATH="$RUNNER_TEMP/workload-checks/node_modules" node scripts/check-workload.cjs "$RUNNER_TEMP/workload-pictures"
       - name: Save screen checks
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ferry-preview
-          path: ${{ runner.temp }}/ferry-pictures
+          name: workload-preview
+          path: ${{ runner.temp }}/workload-pictures
           if-no-files-found: ignore
           retention-days: 7
 
