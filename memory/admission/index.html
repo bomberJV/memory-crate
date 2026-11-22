@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#190e10">
+  <meta name="description" content="Two conversations share one model. Decide what happens when a third exceeds its estimated memory budget.">
+  <title>The Third Conversation · Memory Crate</title>
+  <link rel="stylesheet" href="admission.css">
+  <script type="module" src="admission.js"></script>
+</head>
+<body>
+  <header><b class="monogram" aria-hidden="true">B<span>.</span></b><span>Inside an Inference</span><a href="../#workload">Memory Crate</a></header>
+  <main>
+    <section class="scene" aria-labelledby="title">
+      <div class="opening">
+        <h1>A <em>third</em><br> conversation.</h1>
+        <p class="intro">Two people are working with long chat histories. A third wants in.</p>
+      </div>
+      <figure class="instrument" hidden>
+        <figcaption><span>GPU memory</span><strong id="capacity">24 GiB budget</strong></figcaption>
+        <div class="gauge" aria-hidden="true"><i class="weights"></i><i class="reserve"></i><i class="cache"></i></div>
+        <div class="legend"><span><i class="weights"></i>Model</span><span><i class="reserve"></i>Assumed reserve</span><span><i class="cache"></i>Chat memory</span></div>
+        <div class="ledger" aria-label="Conversation histories">
+          <div class="chat" data-id="a"><div class="row-head"><strong>Chat A</strong><span class="quantity"></span></div><div class="strip" aria-hidden="true"><i class="lost"></i><i class="kept"></i></div><div class="excerpt"><span class="excerpt-label"></span> <q>Use the July price list.</q></div></div>
+          <div class="chat" data-id="b"><div class="row-head"><strong>Chat B</strong><span class="quantity"></span></div><div class="strip" aria-hidden="true"><i class="lost"></i><i class="kept"></i></div><div class="excerpt"><span class="excerpt-label"></span> <q>Keep the original delivery address.</q></div></div>
+          <div class="chat incoming" data-id="c"><div class="row-head"><strong>Chat C</strong><span class="quantity"></span></div><div class="strip" aria-hidden="true"><i class="kept"></i></div><div class="excerpt" id="incoming-state"></div></div>
+        </div>
+      </figure>
+      <div class="decision">
+        <div class="result" aria-live="polite" aria-atomic="true"><h2 id="outcome">The new chat needs more room.</h2><p id="consequence">Choose which histories the model keeps in memory.</p></div>
+        <div class="controls" hidden role="group" aria-label="Admission policy">
+          <button type="button" id="wait" aria-pressed="false">Make C wait</button>
+          <button type="button" id="trim" aria-pressed="false">Trim A and B</button>
+        </div>
+        <div class="follow"><button type="button" id="finish" hidden>Finish Chat A and admit C</button><button type="button" id="reset" hidden>Start over</button></div>
+      </div>
+    </section>
+    <noscript><p>Waiting preserves both histories until the first chat finishes. Trimming the oldest 4,096 tokens from each active chat makes room for the third immediately.</p></noscript>
+    <details><summary>Model assumptions</summary><p id="basis"></p><p>This scenario models a capacity decision. The quoted messages illustrate the oldest part of each chat. Finishing Chat A releases its cache. Trimming removes the oldest tokens from the active context.</p><a href="../#workload">Inspect the full workload</a></details>
+  </main>
+</body>
+</html>

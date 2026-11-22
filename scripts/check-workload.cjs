@@ -16,11 +16,13 @@ execFileSync(process.execPath, [path.join(__dirname, 'build-preview.mjs'), singl
 const routes = new Map([['/preview.html', single], ['/memory/', path.join(repo, 'memory/index.html')]]);
 for (const [directory, names] of Object.entries({
   memory: ['app.js', 'app.css', 'model.js', 'trace.js', 'workload-model.js', 'workload-plot.js', 'workload.js', 'workload.css', 'first-token.css', 'first-token.js'],
+  'memory/admission': ['admission.js', 'admission.css', 'scenario.js'],
   experiment: ['recorded-run.json'],
   shared: ['core.js', 'play.css', 'narration.js', 'narration.css', 'narration-voice.js', 'opus-frames.js', 'symbols.woff']
 })) {
   for (const name of names) routes.set('/' + directory + '/' + name, path.join(repo, directory, name));
 }
+routes.set('/memory/admission/', path.join(repo, 'memory/admission/index.html'));
 const mime = { '.json':'application/json', '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff': 'font/woff' };
 const server = http.createServer((req, res) => {
   const file = routes.get(new URL(req.url, 'http://localhost').pathname);
@@ -182,6 +184,27 @@ async function runWorkload(browser, url, phone) {
       await page.locator('#load-peak').waitFor();
       await page.locator('#ft-play').waitFor();
       await checkWidth(page);
+      await page.close();
+    }
+    for (const width of [320, 390, 1280]) {
+      const page = await browser.newPage({ viewport: { width, height: width < 500 ? 844 : 800 }, hasTouch: width < 500 });
+      await page.goto(base + '/memory/admission/');
+      const action = id => width < 500 ? page.locator(id).tap() : page.locator(id).click();
+      const outcome = () => page.locator('#outcome').innerText();
+      await page.locator('#wait').waitFor();
+      assert.match(await page.locator('#consequence').innerText(), /Only 809 fit/);
+      await action('#wait');
+      assert.equal(await outcome(), 'Both histories stay intact.');
+      await action('#finish');
+      assert.match(await page.locator('[data-id="a"] .quantity').innerText(), /Finished/);
+      assert.match(await page.locator('[data-id="c"] .quantity').innerText(), /8,192 tokens/);
+      await action('#trim');
+      assert.equal(await page.locator('[data-status="trimmed"]').count(), 2);
+      assert.equal(await page.locator('[data-id="a"] .quantity').innerText(), '28,672 tokens');
+      await checkWidth(page);
+      if (width !== 320) await page.screenshot({path: path.join(output, 'admission-' + width + '.png'), fullPage:true});
+      await action('#reset');
+      assert.equal(await outcome(), 'Who gets the memory?');
       await page.close();
     }
     const paper = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 320, height: 640 } });
