@@ -89,10 +89,10 @@
         if (data.type==='complete') {
           clean();
           const report=data.report, first=report.runs[0], warm=report.runs.slice(1).map(r=>r.timestampsMs[0]).sort((a,b)=>a-b);
-          el('status').textContent = 'Measured on this device · WebAssembly CPU';
+          el('status').textContent = 'Measured on this device · 8-bit weights · WebAssembly CPU';
           el('live-output').hidden=false; el('live-output').textContent=first.text;
           el('live-result').hidden=false;
-          el('live-result').textContent = 'Time to first token: '+milliseconds(first.timestampsMs[0])+' on the first generation. Warm median '+milliseconds(warm[1])+' (range '+milliseconds(warm[0])+'–'+milliseconds(warm[2])+'). Loading took '+(report.loadingMs/1000).toFixed(1)+' s.';
+          el('live-result').textContent = 'First token “'+first.firstToken+'” · '+milliseconds(first.timestampsMs[0])+' on the first generation. Warm median '+milliseconds(warm[1])+' (range '+milliseconds(warm[0])+'–'+milliseconds(warm[2])+'). Loading took '+(report.loadingMs/1000).toFixed(1)+' s.';
           liveURL=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));
           el('live-raw').href=liveURL; el('live-raw').hidden=false;
         }

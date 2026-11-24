@@ -36,7 +36,7 @@ self.onmessage = async ({ data }) => {
       const result = await model.generate({input_ids:inputs, attention_mask:mask, do_sample:false, max_new_tokens:data.limit, streamer});
       const outputIds = result.tolist()[0].slice(data.ids.length).map(Number);
       if (!ids.length || ids.length !== outputIds.length || ids.some((id,i)=>id!==outputIds[i])) throw Error('Incomplete token trace');
-      report.runs.push({phase:run?'warm':'first', outputIds, timestampsMs, text:tokenizer.decode(ids,{skip_special_tokens:true})});
+      report.runs.push({phase:run?'warm':'first', outputIds, timestampsMs, firstToken:tokenizer.decode(outputIds.slice(0,1),{skip_special_tokens:false}), text:tokenizer.decode(ids,{skip_special_tokens:true})});
     }
     self.postMessage({type:'complete',report});
     await model.dispose();

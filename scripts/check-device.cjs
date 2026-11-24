@@ -31,7 +31,7 @@ const server = http.createServer((req,res)=>{res.writeHead(200,{'Content-Type':'
     const report=await page.locator('#live-raw').evaluate(async a=>(await fetch(a.href)).json());
     assert.deepEqual(report.runs.map(r=>r.phase),['first','warm','warm','warm']);
     for(const run of report.runs) {
-      assert.equal(run.outputIds.length,run.timestampsMs.length); assert.ok(run.text.length);
+      assert.ok(run.firstToken.length); assert.equal(run.outputIds.length,run.timestampsMs.length); assert.ok(run.text.length);
       assert.ok(run.timestampsMs[0]>0 && run.timestampsMs.every((v,i,a)=>!i || v>=a[i-1]));
     }
     fs.writeFileSync(path.join(out,'verified-device-run.json'),JSON.stringify(report,null,2));
