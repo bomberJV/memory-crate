@@ -38,3 +38,8 @@ const model = read('memory/model.js').replace(/^export /gm,'');
 const view = read('memory/first-token.js').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
 write(base+'chapter.js', "(() => {\n'use strict';\n"+model+'\n'+view+'\nmountFirstToken();\n})();\n');
 write(base+'recorded-run.json',raw);
+
+const observation = 'projects/play/memory/observation/';
+const capture = '../first-token/recorded-run.json';
+write(observation+'index.html',read('memory/observation/index.html').replaceAll('../../experiment/recorded-run.json',capture));
+for (const file of ['observation.css','observation.js','device-worker.js']) write(observation+file,read('memory/observation/'+file));
