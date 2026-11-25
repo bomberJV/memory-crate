@@ -8,7 +8,7 @@ const raw = fs.readFileSync(new URL('../experiment/recorded-run.json',import.met
 const record = JSON.parse(raw);
 
 test('the embedded artifact is the exact output of the recording job', () => {
-  assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),'e22e38be9ffc8f9c9197e79e57104095223ba7430e51c7e5cf98325060b50533');
+  assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),'4f90c1ae55c16b623802f4369d1746471b57b3cd286153a6c293413752b9af35');
   assert.equal(record.device,'CPU');
   assert.equal(record.weightsBytes,538060032);
   assert.equal(record.tokenizerRevision,record.revision);
@@ -22,11 +22,11 @@ test('every repetition has the real deterministic output, timing and KV tensor r
     const shown=c.runs[c.shown];
     const times=c.runs.map(r=>r.steps[0].ns).sort((a,b)=>a-b);
     assert.equal(shown.steps[0].ns,times[2]);
-    assert.equal(c.inputIds.length,key==='short'?75:727);
+    assert.equal(c.inputIds.length,key==='short'?64:434);
     for (const run of c.runs) {
       assert.deepEqual(run.steps.map(s=>s.id),shown.steps.map(s=>s.id));
       assert.equal(run.output,run.steps.map(s=>s.piece).join(''));
-      assert.match(run.output,key==='edit'?/Platform 9/:/Platform 4/);
+      assert.match(run.output,/\b30\b/);
       run.steps.forEach((s,i)=>{
         assert.equal(s.phase,i?'decode':'prefill');
         assert.equal(s.positions,c.inputIds.length+i);
@@ -35,6 +35,8 @@ test('every repetition has the real deterministic output, timing and KV tensor r
       });
     }
   }
-  assert.equal(record.cases.edit.prompt,record.cases.long.prompt.replace('Lisbon | Platform 4','Lisbon | Platform 9'));
-  assert.equal(record.cases.edit.inputIds.filter((id,i)=>id!==record.cases.long.inputIds[i]).length,1);
+  const config = JSON.parse(record.cases.long.prompt.split('\n\n'+record.question)[0].replace('Model configuration:\n',''));
+  assert.equal(config.num_hidden_layers,record.architecture.layers);
+  assert.equal(record.cases.short.prompt,'Model configuration:\n"num_hidden_layers": '+config.num_hidden_layers+'\n\n'+record.question);
+  assert.ok(record.cases.long.prompt.endsWith(record.question));
 });

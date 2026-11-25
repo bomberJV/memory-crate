@@ -11,12 +11,12 @@
 <p class="lede">Before a language model can write a single word, it has to read what you gave it.</p>
 <figure aria-labelledby="fig-title">
 <figcaption><h2 id="fig-title">Time to the first token</h2><span>Recorded CPU experiment</span></figcaption>
-<p class="prompt">“Which platform should a passenger use for the overnight train to Lisbon?”</p>
+<p class="prompt" id="question">How many layers does the model have?</p>
 <div id="traces"></div>
-<p id="finding">The model was given a departure notice, then the full station board. Both listed the same train.</p>
+<p id="finding">Both inputs quote the model’s own configuration.</p>
 </figure>
 <section class="device" aria-labelledby="device-title"><div><h2 id="device-title">On your device</h2>
-<p id="device-note">Run the departure notice through the same model in your browser. The first run downloads approximately 137 MB of model weights plus the runtime.</p></div>
+<p id="device-note">Run the short configuration excerpt through the model in your browser. The first run downloads approximately 137 MB of model weights plus the runtime.</p></div>
 <div class="device-controls"><button type="button" id="run" disabled>Run on this device</button><button type="button" id="stop" hidden>Stop</button></div>
 <p id="status" role="status"></p><blockquote id="live-output" hidden></blockquote><p id="live-result" hidden></p>
 </section>

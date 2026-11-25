@@ -44,22 +44,22 @@ async function checkRecording(page, phone) {
   const byId = id => page.locator('#'+id);
   await byId('ft-play').waitFor();
   await page.locator('.ft-stage').screenshot({ path:path.join(output,phone ? 'phone-first-token.jpg':'desktop-first-token.jpg') });
-  assert.equal(await byId('ft-factor').textContent(), '11.5×');
+  const recorded = JSON.parse(fs.readFileSync(path.join(repo, 'experiment/recorded-run.json'),'utf8'));
+  const selected = name => {const c=recorded.cases[name]; return c.runs[c.shown].steps;};
+  const short=selected('short'), long=selected('long');
+  assert.equal(await byId('ft-factor').textContent(), (long[0].ns / short[0].ns).toFixed(1)+'×');
+  assert.equal(await page.locator('.ft-cache').first().textContent(), (short[0].kvBytes/2**20).toFixed(2)+' MiB KV cache after input');
   await byId('ft-first').click();
   const answers = page.locator('.ft-answer');
-  assert.equal(await answers.nth(0).innerText(), 'The');
+  assert.equal(await answers.nth(0).innerText(), short[0].piece);
   assert.match(await answers.nth(1).innerText(), /Reading/);
   await byId('ft-next').click();
-  assert.equal(await answers.nth(1).innerText(), 'The');
-  if(phone) await byId('ft-edit').tap(); else { await byId('ft-edit').focus(); await page.keyboard.press('Enter'); }
-  assert.match(await answers.nth(0).innerText(), /Platform 4/);
-  assert.match(await answers.nth(1).innerText(), /Platform 9/);
+  assert.equal(await answers.nth(1).innerText(), long[0].piece);
   await byId('ft-play').click();
   await page.waitForFunction(() => document.querySelector('#ft-play').textContent === 'Replay both runs');
-  assert.match(await answers.nth(1).innerText(), /Platform 9/);
-  await byId('ft-edit').click();
+  assert.ok((await answers.nth(1).innerText()).includes(recorded.cases.long.runs[recorded.cases.long.shown].output));
   await page.locator('.ft-evidence > summary').click();
-  assert.match(await byId('ft-stats').innerText(), /1,478 ms/);
+  assert.ok((await byId('ft-stats').innerText()).includes(Math.round(long[0].ns/1e6)+' ms'));
   const download = page.waitForEvent('download');
   await byId('ft-download').click();
   const file=await download;
@@ -225,7 +225,7 @@ async function runWorkload(browser, url, phone) {
     }
     const paper = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 320, height: 640 } });
     await paper.goto(base + '/preview.html');
-    assert.match(await paper.locator('#first-token').innerText(), /1,478 ms/);
+    assert.match(await paper.locator('#first-token').innerText(), /567 ms/);
     await paper.locator('#workload-detail > summary').click();
     assert.match(await paper.locator('.paper-load').innerText(), /40,960 bytes/);
     assert.equal(await paper.locator('#load-play').isVisible(), false);

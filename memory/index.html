@@ -8,7 +8,7 @@
     <h1 id="calculator-title">Will <em>it fit?</em></h1>
     <p>A model’s weights take up memory before the first token. As the conversation grows, so does its cache.</p>
   </div>
-  <nav class="experiment-links" aria-label="Experiments"><a href="#inference-trace">Memory estimate</a><a href="#first-token">Recorded and live inference</a></nav>
+  <nav class="experiment-links" aria-label="Experiments"><a href="#inference-trace">Memory estimate</a><a href="#first-token">Measured timing</a></nav>
   <div class="trace-interactive" hidden>
 
     <div class="trace-layout">
@@ -35,22 +35,21 @@
   <noscript><div class="trace-static"><h3>A context-growth example</h3><p>8 billion parameters at 16 bits occupy 16 GB ≈ 14.901 GiB. With a 1 GiB assumed reserve and zero cached tokens, the estimate is 15.901 GiB against a 16 GiB budget.</p><p>At 8,192 tokens, the specified cache adds exactly 1 GiB: 16.901 GiB total, exceeding the budget by about 0.901 GiB. Doubling concurrent sequences doubles cache to 2 GiB; shared weights and reserve stay fixed. Changing weight precision leaves cache unchanged.</p><p>Enable JavaScript to change inputs and inspect their dependencies. This static example uses the same documented accounting fixture.</p></div></noscript>
 </section>
 <section id="first-token" class="ft" data-record="../experiment/recorded-run.json" data-worker="observation/device-worker.js" aria-labelledby="ft-title">
-  <div class="ft-mast"><span>Inside an Inference</span><span>Recorded CPU experiment</span></div>
-  <div class="ft-head"><h2 id="ft-title">Before the first <em>word.</em></h2><p>We asked SmolLM2-135M which platform the Lisbon train leaves from. The departure notice and the full station board both say platform 4. Watch how long it takes to start answering each one.</p></div>
+  
+  <div class="ft-head"><h2 id="ft-title">Time to the first <em>token.</em></h2><p>We gave a smaller model, SmolLM2-135M, one line from its own configuration, then the full file. Both inputs ask how many layers it has.</p></div>
   <div class="ft-live" hidden>
     <div class="ft-stage">
-      <div class="ft-stage-head"><h3>Time to the first token</h3><div><span id="ft-factor"></span><small>longer to first token</small></div></div>
+      <div class="ft-stage-head"><h3>Measured on CPU</h3><div><span id="ft-factor"></span><small>as long with the full file</small></div></div>
       <div id="ft-lanes"></div>
       <div class="ft-control">
         <button id="ft-play" type="button">Replay both runs</button>
         <label for="ft-time">Recorded time</label><input id="ft-time" type="range" min="0" max="1000" value="1000" step="1"><output id="ft-clock" for="ft-time"></output>
       </div>
-      <div class="ft-jumps"><button type="button" id="ft-first">When the first answer starts</button><button type="button" id="ft-next">When the second starts</button></div>
+      <div class="ft-jumps"><button type="button" id="ft-first">Short input’s first token</button><button type="button" id="ft-next">Full file’s first token</button></div>
     </div>
-    <div class="ft-amend"><div><small>Last entry on the full board</small><p>23:40 &nbsp; Lisbon &nbsp;·&nbsp; Platform <strong id="ft-platform">4</strong></p></div><button type="button" id="ft-edit" aria-pressed="false">Change 4 to 9</button></div>
     <p class="ft-caption" id="ft-caption"></p>
     <div class="device" aria-labelledby="device-title"><div><h3 id="device-title">Run the short prompt on your device</h3>
-<p id="device-note">An 8-bit version of SmolLM2 reads the 75-token notice and generates up to 12 tokens. Starting the run downloads about 137 MB of weights plus the browser runtime.</p></div>
+<p id="device-note">An 8-bit version reads the same 64-token input and generates up to 12 tokens. Starting the run downloads about 137 MB of weights plus the browser runtime.</p></div>
 <div class="device-controls"><button type="button" id="run" disabled>Run on this device</button><button type="button" id="stop" hidden>Stop</button></div>
 <p id="status" role="status"></p><blockquote id="live-output" hidden></blockquote><p id="live-result" hidden></p>
 <a id="live-raw" hidden download="device-run.json">Download this device’s measurements</a>
@@ -58,10 +57,10 @@
     <details class="ft-evidence"><summary>Inspect the recording</summary>
       <div class="ft-proof"><p id="ft-device"></p><div class="ft-table"><table><caption>Measurements from five warm runs per input</caption><thead><tr><th>Input</th><th>First token, median [min–max]</th><th>Decode step, median</th><th>KV tensors after prefill</th></tr></thead><tbody id="ft-stats"></tbody></table></div>
       <p id="ft-method"></p><p>The browser run uses 8-bit weights on one WebAssembly CPU thread. Its clock starts at generation and records each emitted token. Loading has its own timer. The lower-precision model can produce different text.</p><details><summary>Read the exact prompts and output token IDs</summary><pre id="ft-input"></pre></details>
-      <p class="ft-links"><button id="ft-download" type="button">Download raw runs</button><a href="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/tree/12fd25f77366fa6b3b4b768ec3050bf629380bac">Model and tokenizer</a><a href="https://github.com/bomberJV/memory-crate/pull/3">Experiment source</a></p></div>
+      <p class="ft-links"><button id="ft-download" type="button">Download raw runs</button><a href="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/tree/12fd25f77366fa6b3b4b768ec3050bf629380bac">Model and tokenizer</a><a href="https://github.com/bomberJV/memory-crate/pull/4">Experiment source</a></p></div>
     </details>
   </div>
-  <noscript><p>In five warm CPU runs, the median first token arrived after 128 ms for 75 input tokens and 1,478 ms for 727. Both outputs identified platform 4. Changing the platform digit on the full board changed the recorded answer to platform 9.</p></noscript>
+  <noscript><p>With the same 135M model on the same CPU, one configuration setting took 106 ms to the first token (64 input tokens). The full configuration took 567 ms (434 input tokens). Both recorded excerpts reported 30 layers. These are medians from five warm runs per input.</p></noscript>
   <a class="ft-down" href="#inference-trace">Back to the 8B memory calculator</a>
 </section>
   <aside class="trace-handoff" aria-labelledby="handoff-title"><h3 id="handoff-title">Beyond memory</h3><p>This calculator estimates storage. The medical AI study evaluates model reliability in a separate experiment.</p><a href="https://github.com/bomberJV/medical-ai-research">Inspect the separate medical AI research ↗</a></aside>

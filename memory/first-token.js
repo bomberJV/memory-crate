@@ -24,14 +24,12 @@ export async function mountFirstToken() {
   const num = new Intl.NumberFormat('en-US');
   const milli = ns => num.format(Math.round(ns / 1e6)) + ' ms';
   const mib = b => (b / 2 ** 20).toFixed(2) + ' MiB';
-  const sum = values => values.reduce((a,b) => a+b,0);
   const median = values => {
     const sorted = [...values].sort((a,b) => a-b);
     const middle = Math.floor(sorted.length/2);
     return sorted.length%2 ? sorted[middle] : (sorted[middle-1]+sorted[middle])/2;
   };
-  const names = {short:'Departure notice', long:'Full station board', edit:'Amended board'};
-  let amended = false;
+  const names = {short:'One setting', long:'Full configuration'};
   let lanes = [];
   let cursor = 0;
   let duration = 0;
@@ -58,6 +56,7 @@ export async function mountFirstToken() {
     const wrapper = node('div','ft-lane');
     const header = node('div','ft-lane-head');
     header.append(node('span','',names[lane.key]+' · '+lane.count+' tokens'),node('small','','First token · '+milli(lane.first)));
+    const cache = node('small','ft-cache',mib(lane.steps[0].kvBytes)+' KV cache after input');
     lane.answer = node('p','ft-answer');
     const track = node('div','ft-track');
     track.setAttribute('aria-hidden','true');
@@ -70,7 +69,7 @@ export async function mountFirstToken() {
     lane.shade = node('i','ft-shade');
     lane.marker = node('i','ft-cursor');
     track.append(lane.shade,lane.marker);
-    wrapper.append(header,lane.answer,track);
+    wrapper.append(header,lane.answer,track,cache);
     return wrapper;
   }
   function paint(t) {
@@ -82,13 +81,7 @@ export async function mountFirstToken() {
       if (lane.shown !== count) {
         lane.answer.replaceChildren();
         if (!count) lane.answer.textContent = 'Reading the input…';
-        else {
-          for (const s of visible) {
-            if (s.piece.trim() === '4' || s.piece.trim() === '9') lane.answer.append(node('mark','',s.piece));
-            else lane.answer.append(document.createTextNode(s.piece));
-          }
-          if (count === record.maxOutputTokens) lane.answer.append(document.createTextNode('…'));
-        }
+        else lane.answer.textContent = visible.map(step => step.piece).join('') + (count === record.maxOutputTokens ? '…' : '');
         lane.answer.dataset.reading = String(count === 0);
         lane.shown = count;
       }
@@ -107,24 +100,19 @@ export async function mountFirstToken() {
   }
   function configure() {
     halt();
-    lanes = [assemble('short'),assemble(amended ? 'edit' : 'long')];
+    lanes = [assemble('short'),assemble('long')];
     duration = Math.max(...lanes.map(lane => lane.end));
     id('ft-lanes').replaceChildren(...lanes.map(makeLane));
     id('ft-factor').textContent = (lanes[1].first/lanes[0].first).toFixed(1)+'×';
-    id('ft-platform').textContent = amended ? '9' : '4';
-    id('ft-edit').textContent = amended ? 'Restore platform 4' : 'Change 4 to 9';
-    id('ft-edit').setAttribute('aria-pressed', String(amended));
-    id('ft-caption').textContent = amended
-      ? 'One input digit changed on the full board. The model changed its answer to platform 9. Both responses are recorded.'
-      : 'Hatching shows the time spent reading the prompt. Each solid segment produces one more token. Both runs start together in the replay and were measured separately on the same CPU.';
+    id('ft-caption').textContent = 'Hatching marks the time spent reading the input. Each solid segment ends when another token appears.';
     const c = record.cases[lanes[1].key];
     id('ft-input').textContent = lanes.map(l => {
       const item=record.cases[l.key];
       return names[l.key]+'\n\n'+item.prompt+'\n\nOutput token IDs: '+l.steps.map(s=>s.id).join(' · ');
     }).join('\n\n————————\n\n');
     const sample = c.runs[c.shown].steps[0];
-    id('ft-method').textContent = 'After prefill the selected board has '+num.format(sample.kvBytes)+' bytes of KV tensors. Its cache geometry predicts '+num.format(cacheBytes(c.inputIds.length,1,record.architecture))+' bytes. The process resident set sampled at that boundary was '+mib(sample.rssBytes)+'. Model parameter payload: '+mib(record.weightsBytes)+'. RSS includes the runtime. GPU memory and power were not measured. Raw data includes model-load time, the first process call, warm repetitions, token IDs, hashes and every step.';
-    paint(amended ? duration : lanes[0].end);
+    id('ft-method').textContent = 'After reading the full configuration, the model held '+num.format(sample.kvBytes)+' bytes of KV tensors. Its cache geometry predicts '+num.format(cacheBytes(c.inputIds.length,1,record.architecture))+' bytes. The process resident set sampled at that boundary was '+mib(sample.rssBytes)+'. Model parameter payload: '+mib(record.weightsBytes)+'. RSS includes the runtime. GPU memory and power were not measured. Raw data includes model-load time, the first process call, warm repetitions, token IDs, hashes and every step.';
+    paint(lanes[0].first);
   }
   id('ft-device').textContent = record.model+' · '+record.cpu+' · '+record.threads+' CPU threads · FP32 · PyTorch '+record.runtime.torch+'. License: '+record.license+'. Revision: '+record.revision+'. Each lane plays the warm run with median prefill time. Greedy decoding, up to '+record.maxOutputTokens+' output tokens. Clocks sum timed synchronous forward passes and token selection. Loading, tokenization, logging and queueing are excluded.';
   for (const [key,c] of Object.entries(record.cases)) {
@@ -134,7 +122,6 @@ export async function mountFirstToken() {
     for (const txt of [names[key],milli(median(first))+' ['+milli(Math.min(...first))+'–'+milli(Math.max(...first))+']',milli(median(decoding)),mib(c.runs[c.shown].steps[0].kvBytes)]) tr.append(node('td','',txt));
     id('ft-stats').append(tr);
   }
-  id('ft-edit').onclick = () => { amended=!amended; configure(); };
   id('ft-time').oninput = event => { halt(true); paint(Number(event.target.value)*duration/1000); };
   id('ft-first').onclick = () => { halt(true); paint(lanes[0].first); };
   id('ft-next').onclick = () => { halt(true); paint(lanes[1].first); };
