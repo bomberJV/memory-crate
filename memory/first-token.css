@@ -88,8 +88,9 @@
 @media(max-width:600px){.ft-receipt{grid-template-columns:repeat(2,minmax(0,1fr))}.ft-inspector-head label{font-size:12px}.ft .ft-token,.ft .ft-jumps button{min-height:44px}.ft-control{gap:7px}.ft-stage-head small{font-size:11px}.ft-answer{min-height:1.6em}.ft-axis{font-size:11px}.ft-track{height:21px}.ft-track .ft-prefill,.ft-track .ft-step{height:13px}}
 
 .ft .device-controls {align-items:center}
-.ft .device-input-label {display:inline-flex;align-items:center;gap:7px;font-family:var(--ft-mono,monospace)}
+.ft .device-input-label {display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:100%;font-family:var(--ft-mono,monospace)}
 .ft .device-input-label[hidden] {display:none}
+.ft .device-input-label select {min-width:0;max-width:100%;flex:1}
 
 @media (max-width:540px) {
   .ft-control {display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:9px}
