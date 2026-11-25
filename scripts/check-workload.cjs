@@ -45,12 +45,24 @@ async function runWorkload(browser, url, phone) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(url);
-  await page.locator('#load-peak').waitFor();
+  await page.locator('#trace-total').waitFor();
   const textOf = selector => page.locator(selector).innerText();
   const click = async selector => {
     const element = page.locator(selector);
     if (phone) await element.tap(); else await element.click();
   };
+  assert.equal(await textOf('#trace-total'), '16.901 GiB');
+  assert.match(await textOf('#trace-difference'), /KV cache grew from 0 to 1 GiB/);
+  await capture(page, phone ? 'calculator-phone' : 'calculator-desktop');
+  await click('#context-steps button:first-child');
+  assert.equal(await textOf('#trace-total'), '15.901 GiB');
+  await page.locator('#trace-sequences').selectOption('2');
+  await page.locator('#trace-tokens').selectOption('8192');
+  assert.match(await textOf('#trace-difference'), /KV cache grew from 0 to 2 GiB/);
+  await click('#trace-baseline');
+  assert.match(await textOf('#trace-difference'), /matches the baseline/);
+  await click('#workload-detail > summary');
+  await page.locator('#load-plot').scrollIntoViewIfNeeded();
   assert.equal(await textOf('#load-peak'), '24.901 GiB');
   assert.match(await textOf('#plan-result-title'), /Request C.*810/);
   const plot = page.locator('#load-plot');
@@ -148,12 +160,13 @@ async function runWorkload(browser, url, phone) {
     for (const width of [320, 768]) {
       const page = await browser.newPage({ viewport: { width, height: 800 } });
       await page.goto(base + '/preview.html');
-      await page.locator('#load-peak').waitFor();
+      await page.locator('#trace-total').waitFor();
       await checkWidth(page);
       await page.close();
     }
     const paper = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 320, height: 640 } });
     await paper.goto(base + '/preview.html');
+    await paper.locator('#workload-detail > summary').click();
     assert.match(await paper.locator('.paper-load').innerText(), /40,960 bytes/);
     assert.equal(await paper.locator('#load-play').isVisible(), false);
     await paper.close();

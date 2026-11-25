@@ -1,14 +1,3 @@
-body:has(.workload-lab) {
-  background: #10171d;
-  color: #e5ecec;
-}
-body:has(.workload-lab) > main {
-  max-width: 1460px;
-  padding-top: clamp(24px, 3.4vw, 48px);
-}
-body:has(.workload-lab) > header, body:has(.workload-lab) > footer {
-  border-color: #3b454a;
-}
 .workload-lab {
   --paper: #e9ece8;
   --soft: #b6c1c3;
@@ -37,12 +26,12 @@ body:has(.workload-lab) > header, body:has(.workload-lab) > footer {
   letter-spacing: .09em;
   text-transform: uppercase;
 }
-.workload-heading h1 {
+.workload-heading h2 {
   margin: 0;
   font: 500 clamp(3.2rem, 6.75vw, 6.6rem)/.99 'Instrument Sans','Segoe UI',system-ui,sans-serif;
   letter-spacing: -.071em;
 }
-.workload-heading h1 em {
+.workload-heading h2 em {
   font: italic 1em Georgia, serif;
   color: var(--copper);
 }
@@ -148,9 +137,8 @@ body:has(.workload-lab) > header, body:has(.workload-lab) > footer {
   .cursor-panel { padding: 16px; }
 }
 @media (max-width: 690px) {
-  body:has(.workload-lab) > main { padding: 25px 15px 50px; }
   .workload-heading { display: block; }
-  .workload-heading h1 { font-size: clamp(2.95rem, 12vw, 4.5rem); }
+  .workload-heading h2 { font-size: clamp(2.95rem, 12vw, 4.5rem); }
   .workload-heading > p { margin-top: 12px; }
   .plan-strip { gap: 7px; }
   .plan-strip > span { width: 100%; }

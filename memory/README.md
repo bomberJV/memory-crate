@@ -1,6 +1,6 @@
 # Memory Crate
 
-An interactive inference-memory study and packing workshop by Brandon Frank Han-Chween Huang. The opening experiment follows three independent requests through one shared model. Inspect the first token over budget and try different arrival orders, weight precisions and prompt lengths.
+An inference-memory calculator by Brandon Frank Han-Chween Huang. The opening comparison holds an 8B model at 16-bit precision and adds 8,192 cached tokens. Set your own baseline to compare weights, KV cache and assumed reserve. The optional three-request study follows the same accounting across overlapping requests.
 
 Plain HTML, CSS and browser JavaScript. No build step, remote services, vendor model presets, or runtime dependencies.
 
