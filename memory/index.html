@@ -57,7 +57,7 @@
 </div>
     <details class="ft-evidence"><summary>Inspect the recording</summary>
       <div class="ft-proof"><p id="ft-device"></p><div class="ft-table"><table><caption>Measurements from five warm runs per input</caption><thead><tr><th>Input</th><th>First token, median [min–max]</th><th>Decode step, median</th><th>KV tensors after prefill</th></tr></thead><tbody id="ft-stats"></tbody></table></div>
-      <p id="ft-method"></p><details><summary>Read the exact prompts and output token IDs</summary><pre id="ft-input"></pre></details>
+      <p id="ft-method"></p><p>The browser run uses 8-bit weights on one WebAssembly CPU thread. Its clock starts at generation and records each emitted token. Loading has its own timer. The lower-precision model can produce different text.</p><details><summary>Read the exact prompts and output token IDs</summary><pre id="ft-input"></pre></details>
       <p class="ft-links"><button id="ft-download" type="button">Download raw runs</button><a href="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/tree/12fd25f77366fa6b3b4b768ec3050bf629380bac">Model and tokenizer</a><a href="https://github.com/bomberJV/memory-crate/pull/3">Experiment source</a></p></div>
     </details>
   </div>
