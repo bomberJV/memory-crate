@@ -22,11 +22,14 @@ QUESTION = "What is the value of num_hidden_layers? Reply with just the number."
 REPEATS = 5
 FILES = ["model.safetensors", "config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "generation_config.json"]
 
-def make_prompt(configuration, full):
-    # Both inputs quote the same pinned config.json. Only the amount of context differs.
+def make_prompts(configuration, tokenizer_configuration):
     layer_line = next(line for line in configuration.splitlines() if '"num_hidden_layers"' in line)
-    context = configuration.strip() if full else layer_line.strip().rstrip(",")
-    return "Model configuration:\n" + context + "\n\n" + QUESTION
+    contexts = {
+        "short": layer_line.strip().rstrip(","),
+        "long": configuration.strip(),
+        "bundle": configuration.strip() + "\n\nTokenizer configuration:\n" + tokenizer_configuration.strip(),
+    }
+    return {key: "Model configuration:\n" + text + "\n\n" + QUESTION for key, text in contexts.items()}
 
 
 def sha(path):
@@ -78,8 +81,8 @@ def record():
     cases = {}
     tensors = {}
     configuration = (root / "config.json").read_text(encoding="utf-8")
-    for key, full in [("short", False), ("long", True)]:
-        prompt = make_prompt(configuration, full)
+    tokenizer_configuration = (root / "tokenizer_config.json").read_text(encoding="utf-8")
+    for key, prompt in make_prompts(configuration, tokenizer_configuration).items():
         msgs = [{"role": "user", "content": prompt}]
         ids = tok.apply_chat_template(msgs, tokenize=True, add_generation_prompt=True, return_tensors="pt")
         tensors[key] = ids
@@ -96,7 +99,7 @@ def record():
         case["shown"] = sorted(range(REPEATS), key=lambda j: case["runs"][j]["steps"][0]["ns"])[REPEATS//2]
     config = model.config
     return {
-        "schema": 2, "date": datetime.now(timezone.utc).isoformat(), "model": MODEL,
+        "schema": 3, "date": datetime.now(timezone.utc).isoformat(), "model": MODEL,
         "revision": REV, "tokenizerRevision": REV, "license": "Apache-2.0", "eos": tok.eos_token_id,
         "hashes": {p.name: sha(p) for p in sorted(root.iterdir()) if p.name in FILES},
         "runtime": {p: version(p) for p in ["torch","transformers","tokenizers","huggingface-hub","safetensors","numpy"]},
