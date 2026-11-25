@@ -1,6 +1,6 @@
 # Memory Crate
 
-The standalone page opens with the 8B memory estimate. Follow **Measured timing** to replay the 64- and 434-token SmolLM2 runs. **Run the short prompt on your device** loads the pinned browser runtime and weights after a click. Either recording remains usable when device inference is unavailable. The single-file edition embeds the CPU record and worker source; live inference needs network access on first use.
+The standalone page opens with the 8B memory estimate. Follow **Token profiler** to replay the 64-, 434- and 1,481-token SmolLM2 runs. **Measure inference on your device** accepts any of the three inputs and loads the pinned browser runtime and weights after a click. Each recording remains usable when device inference is unavailable. The single-file edition embeds the CPU record and worker source; live inference needs network access on first use.
 
 An inference-memory calculator by Brandon Frank Han-Chween Huang. The opening comparison holds an 8B model at 16-bit precision and adds 8,192 cached tokens. Set your own baseline to compare weights, KV cache and assumed reserve. The optional three-request study follows the same accounting across overlapping requests.
 
@@ -20,7 +20,7 @@ For a self-contained edition, run `node scripts/build-preview.mjs preview.html` 
 
 ### Before the first word
 
-Compare the time to the first token and the observed cache payload when the same model reads one setting or its full configuration. The pinned CPU capture and full protocol are in [the experiment directory](../experiment/README.md). The 8B workload below is a separate estimate.
+Compare the time to the first token and the observed cache payload when the same model reads one setting, the model file or the model and tokenizer files. The pinned CPU capture and full protocol are in [the experiment directory](../experiment/README.md). The 8B workload below is a separate estimate.
 
 ### The third request
 

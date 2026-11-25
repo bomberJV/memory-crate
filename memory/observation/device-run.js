@@ -2,6 +2,12 @@ export function mountDeviceRun(record, workerPath) {
   const el = id => document.getElementById(id);
   const milliseconds = value => Math.round(value).toLocaleString('en-US') + ' ms';
   const run = el('run'), stop = el('stop');
+  const input = el('device-input');
+  const labels = {short:'One setting', long:'Model file', bundle:'Both files'};
+  for (const [key, trace] of Object.entries(record.cases)) {
+    input.add(new Option(labels[key]+' · '+trace.inputIds.length.toLocaleString('en-US')+' tokens', key));
+  }
+  input.value = 'short';
   function showHostedLink() {
     const host = 'https://the-third-conversation.brainyalbatross8.chatgpt.site/';
     if (location.origin === new URL(host).origin || el('hosted-device-link')) return;
@@ -12,27 +18,29 @@ export function mountDeviceRun(record, workerPath) {
     run.parentNode.append(link);
   }
   if (!self.isSecureContext || typeof Worker === 'undefined' || typeof WebAssembly === 'undefined' || typeof BigInt64Array === 'undefined' || (location.protocol === 'file:' && !el('worker-source'))) {
-    run.hidden = true;
+    run.hidden = true; input.parentElement.hidden = true;
     el('device-note').textContent = 'Live measurement requires a supported browser and a secure website. The recorded traces above are available here.';
     showHostedLink();
     return;
   }
-  run.disabled = false;
+  input.disabled = false; run.disabled = false;
   let worker = null, liveURL = '', workerURL = '', watchdog;
   function clean() {
     clearTimeout(watchdog);
     if (worker) worker.terminate();
     if (workerURL) URL.revokeObjectURL(workerURL);
-    worker = null; workerURL = ''; run.disabled = false; stop.hidden = true;
+    worker = null; workerURL = ''; input.disabled = false; run.disabled = false; stop.hidden = true;
   }
   function fail() { clean(); el('status').textContent = 'The live run could not finish on this device. The recorded traces are still available above.'; showHostedLink(); }
   function armTimeout() { clearTimeout(watchdog); watchdog = setTimeout(fail, 180000); }
   stop.onclick = () => { clean(); el('status').textContent = 'Live run stopped.'; run.focus(); };
   run.onclick = () => {
     if (worker) return;
+    const condition = input.value;
+    const ids = record.cases[condition].inputIds;
     el('live-output').hidden = true; el('live-result').hidden = true; el('live-raw').hidden = true;
     if (liveURL) URL.revokeObjectURL(liveURL);
-    run.disabled = true; stop.hidden = false; el('status').textContent = 'Loading the browser runtime and model…';
+    input.disabled = true; run.disabled = true; stop.hidden = false; el('status').textContent = 'Loading the browser runtime and model…';
     try {
       const source = el('worker-source');
       if (source) workerURL = URL.createObjectURL(new Blob([source.textContent],{type:'text/javascript'}));
@@ -50,7 +58,8 @@ export function mountDeviceRun(record, workerPath) {
         if (data.type==='complete') {
           clean();
           const report=data.report, first=report.runs[0], warm=report.runs.slice(1).map(r=>r.timestampsMs[0]).sort((a,b)=>a-b);
-          el('status').textContent = 'Measured on this device · 8-bit weights · WebAssembly CPU';
+          report.condition = condition;
+          el('status').textContent = 'Measured on this device · '+labels[condition]+' · '+ids.length.toLocaleString('en-US')+' input tokens · 8-bit weights · WebAssembly CPU';
           el('live-output').hidden=false; el('live-output').textContent=first.text;
           el('live-result').hidden=false;
           el('live-result').textContent = 'First token “'+first.firstToken+'” · '+milliseconds(first.timestampsMs[0])+' on the first generation. Warm median '+milliseconds(warm[1])+' (range '+milliseconds(warm[0])+'–'+milliseconds(warm[2])+'). Loading took '+(report.loadingMs/1000).toFixed(1)+' s.';
@@ -58,7 +67,7 @@ export function mountDeviceRun(record, workerPath) {
           el('live-raw').href=liveURL; el('live-raw').hidden=false;
         }
       };
-      worker.postMessage({ids:record.cases.short.inputIds,limit:record.maxOutputTokens});
+      worker.postMessage({ids,limit:record.maxOutputTokens});
     } catch { fail(); }
   };
   addEventListener('pagehide',clean);

@@ -4,11 +4,17 @@
 <main>
 <section id="inference-trace" class="inference-trace" aria-labelledby="calculator-title">
   <div class="calculator-opening">
-    <p class="kicker">Memory Crate</p>
-    <h1 id="calculator-title">Will <em>it fit?</em></h1>
-    <p>A model’s weights take up memory before the first token. As the conversation grows, so does its cache.</p>
+    <div class="calculator-intro"><p class="kicker">Memory Crate</p>
+      <h1 id="calculator-title">Will <em>it fit?</em></h1>
+      <p>A model’s weights take up memory before the first token. As the conversation grows, so does its cache.</p>
+      <nav class="experiment-links" aria-label="Experiments"><a href="#inference-trace">Memory estimate</a><a href="#first-token">Token profiler</a></nav>
+    </div>
+    <figure class="context-scope trace-interactive" hidden>
+      <figcaption><strong>Context growth</strong><span id="scope-position"></span></figcaption>
+      <svg id="context-scope-plot" viewBox="0 0 490 134" tabindex="0" role="slider" aria-label="Cached tokens per sequence" aria-valuemin="0" aria-valuemax="32768" aria-valuenow="8192"></svg>
+      <div id="context-steps" class="context-steps" role="group" aria-label="Cached tokens per sequence"></div>
+    </figure>
   </div>
-  <nav class="experiment-links" aria-label="Experiments"><a href="#inference-trace">Memory estimate</a><a href="#first-token">Measured timing</a></nav>
   <div class="trace-interactive" hidden>
 
     <div class="trace-layout">
@@ -19,8 +25,7 @@
         <div id="trace-allocations"></div>
         <div class="trace-legend"><span><i class="weight-key"></i>Weights · calculated</span><span><i class="cache-key"></i>KV cache · calculated</span><span><i class="reserve-key"></i>Reserve · assumed</span><span><i class="boundary-key"></i>Budget boundary</span></div>
         <p id="trace-difference" class="trace-difference" aria-live="polite"></p>
-        <div class="context-heading"><h3>Context length</h3><p>Choose the number of cached tokens per sequence.</p></div>
-        <div id="context-steps" class="context-steps" role="group" aria-label="Cached tokens per sequence"></div>
+
       </div>
       <div class="trace-constraint-panel"><h3>Model and budget</h3><div id="trace-controls" class="trace-controls"></div><p id="trace-lock-note" class="trace-note"></p><p class="trace-note">Cache assumptions: 32 layers, 8 KV heads, 128 dimensions per head and 16-bit values.</p></div>
     </div>
@@ -36,31 +41,39 @@
 </section>
 <section id="first-token" class="ft" data-record="../experiment/recorded-run.json" data-worker="observation/device-worker.js" aria-labelledby="ft-title">
   
-  <div class="ft-head"><h2 id="ft-title">Time to the first <em>token.</em></h2><p>We gave a smaller model, SmolLM2-135M, one line from its own configuration, then the full file. Both inputs ask how many layers it has.</p></div>
+  <div class="ft-head"><h2 id="ft-title">Time to the first <em>token.</em></h2><p>We asked a smaller model how many layers it has. Each run gives it more to read. The input grows from one setting to the model file, then the model and tokenizer files together.</p></div>
   <div class="ft-live" hidden>
     <div class="ft-stage">
-      <div class="ft-stage-head"><h3>Measured on CPU</h3><div><span id="ft-factor"></span><small>as long with the full file</small></div></div>
+      <div class="ft-stage-head"><div><p class="ft-instrument">SmolLM2-135M / CPU / FP32</p><h3>Token profiler</h3></div><div><span id="ft-factor"></span><small>first-token time, longest vs. shortest</small></div></div>
+      <div id="ft-axis" class="ft-axis" aria-hidden="true"></div>
       <div id="ft-lanes"></div>
       <div class="ft-control">
-        <button id="ft-play" type="button">Replay both runs</button>
+        <button id="ft-play" type="button">Replay all runs</button>
         <label for="ft-time">Recorded time</label><input id="ft-time" type="range" min="0" max="1000" value="1000" step="1"><output id="ft-clock" for="ft-time"></output>
+        <label class="ft-rate-label" for="ft-speed">Playback</label><select id="ft-speed" aria-label="Playback speed"><option value="0.25">¼×</option><option value="0.5" selected>½×</option><option value="1">1×</option></select>
       </div>
-      <div class="ft-jumps"><button type="button" id="ft-first">Short input’s first token</button><button type="button" id="ft-next">Full file’s first token</button></div>
+      <div class="ft-jumps" aria-label="Inspect a first-token boundary"><span>First token</span><button type="button" id="ft-first">One setting</button><button type="button" id="ft-next">Model file</button><button type="button" id="ft-bundle">Both files</button></div>
     </div>
     <p class="ft-caption" id="ft-caption"></p>
-    <div class="device" aria-labelledby="device-title"><div><h3 id="device-title">Run the short prompt on your device</h3>
-<p id="device-note">An 8-bit version reads the same 64-token input and generates up to 12 tokens. Starting the run downloads about 137 MB of weights plus the browser runtime.</p></div>
-<div class="device-controls"><button type="button" id="run" disabled>Run on this device</button><button type="button" id="stop" hidden>Stop</button></div>
+    <div class="ft-inspector">
+      <div class="ft-inspector-head"><h3>Event inspector</h3><label>Recording <select id="ft-inspect-run"><option value="short">One setting</option><option value="long">Model file</option><option value="bundle">Both files</option></select></label></div>
+      <p class="ft-event" id="ft-event"></p>
+      <dl class="ft-receipt"><div><dt>Token ID</dt><dd id="ft-token-id"></dd></div><div><dt>Step time</dt><dd id="ft-step-time"></dd></div><div><dt>Cached positions</dt><dd id="ft-positions"></dd></div><div><dt>KV tensor bytes</dt><dd id="ft-kv-bytes"></dd></div></dl>
+      <div class="ft-token-rail" id="ft-token-rail" aria-label="Recorded output tokens"></div>
+    </div>
+    <div class="device" aria-labelledby="device-title"><div><h3 id="device-title">Measure inference on your device</h3>
+<p id="device-note">Choose an input for the 8-bit browser model. The first run downloads about 137 MB of weights plus the runtime.</p></div>
+<div class="device-controls"><label class="device-input-label">Input <select id="device-input" disabled></select></label><button type="button" id="run" disabled>Run on this device</button><button type="button" id="stop" hidden>Stop</button></div>
 <p id="status" role="status"></p><blockquote id="live-output" hidden></blockquote><p id="live-result" hidden></p>
 <a id="live-raw" hidden download="device-run.json">Download this device’s measurements</a>
 </div>
     <details class="ft-evidence"><summary>Inspect the recording</summary>
       <div class="ft-proof"><p id="ft-device"></p><div class="ft-table"><table><caption>Measurements from five warm runs per input</caption><thead><tr><th>Input</th><th>First token, median [min–max]</th><th>Decode step, median</th><th>KV tensors after prefill</th></tr></thead><tbody id="ft-stats"></tbody></table></div>
-      <p id="ft-method"></p><p>The browser run uses 8-bit weights on one WebAssembly CPU thread. Its clock starts at generation and records each emitted token. Loading has its own timer. The lower-precision model can produce different text.</p><details><summary>Read the exact prompts and output token IDs</summary><pre id="ft-input"></pre></details>
+      <p>The configuration specifies 30 layers. The first two recorded excerpts end in <code>30</code>. The third ends in <code>49</code>. Adding the tokenizer file changes the text and its length together, so this comparison cannot isolate the cause of the different output.</p><p id="ft-method"></p><p>The browser run uses 8-bit weights on one WebAssembly CPU thread. Its clock starts at generation and records each emitted token. Loading has its own timer. The lower-precision model can produce different text.</p><details><summary>Read the exact prompts and output token IDs</summary><pre id="ft-input"></pre></details>
       <p class="ft-links"><button id="ft-download" type="button">Download raw runs</button><a href="https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/tree/12fd25f77366fa6b3b4b768ec3050bf629380bac">Model and tokenizer</a><a href="https://github.com/bomberJV/memory-crate/pull/4">Experiment source</a></p></div>
     </details>
   </div>
-  <noscript><p>With the same 135M model on the same CPU, one configuration setting took 106 ms to the first token (64 input tokens). The full configuration took 567 ms (434 input tokens). Both recorded excerpts reported 30 layers. These are medians from five warm runs per input.</p></noscript>
+  <noscript><p>On the same CPU the three median first-token times were 129 ms for one setting, 693 ms for the model file and 5,416 ms for both files. The recorded inputs contained 64, 434 and 1,481 tokens. The first two excerpts end in 30 and the third ends in 49.</p></noscript>
   <a class="ft-down" href="#inference-trace">Back to the 8B memory calculator</a>
 </section>
   <aside class="trace-handoff" aria-labelledby="handoff-title"><h3 id="handoff-title">Beyond memory</h3><p>This calculator estimates storage. The medical AI study evaluates model reliability in a separate experiment.</p><a href="https://github.com/bomberJV/medical-ai-research">Inspect the separate medical AI research ↗</a></aside>

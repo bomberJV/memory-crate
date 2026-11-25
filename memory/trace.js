@@ -46,6 +46,67 @@ export function createTrace({ onChange, onExample, onBaseline, onReset }) {
   });
   document.querySelectorAll('.trace-interactive').forEach(element => { element.hidden = false; });
 
+
+  const scope = $('#context-scope-plot');
+  const plotBox = { left: 51, right: 476, top: 12, bottom: 105 };
+  let scopeSelection = 0;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function drawScope(series, build) {
+    const { left, right, top, bottom } = plotBox;
+    const last = series[series.length - 1];
+    const small = Math.min(series[0].total, build.capacity);
+    const large = Math.max(last.total, build.capacity);
+    const margin = Math.max((large - small) * 0.16, 0.125);
+    const low = Math.max(0, small - margin);
+    const high = large + margin;
+    const x = tokens => left + tokens / last.tokens * (right - left);
+    const y = memory => bottom - (memory - low) / (high - low) * (bottom - top);
+    const fragment = document.createDocumentFragment();
+    function mark(tag, attrs, label) {
+      const shape = document.createElementNS(svgNS, tag);
+      for (const [key, value] of Object.entries(attrs)) shape.setAttribute(key, value);
+      if (label !== undefined) shape.textContent = label;
+      fragment.append(shape);
+    }
+    for (let i = 0; i <= 4; i++) {
+      const tick = x(last.tokens * i / 4);
+      mark('line', { x1:tick, x2:tick, y1:top, y2:bottom, class:'scope-grid' });
+    }
+    const points = series.map(p => x(p.tokens) + ',' + y(p.total)).join(' ');
+    mark('polygon', {points:left+','+bottom+' '+points+' '+right+','+bottom,class:'scope-fill'});
+    mark('line', {x1:left,x2:right,y1:y(build.capacity),y2:y(build.capacity),class:'scope-budget'});
+    mark('text', {x:left-6,y:y(build.capacity)+3,'text-anchor':'end',class:'scope-limit'}, number(build.capacity)+' GiB');
+    mark('polyline', {points, class:'scope-line'});
+    for (const point of series) {
+      const active = point.tokens === build.tokens;
+      if (active) mark('line', {x1:x(point.tokens),x2:x(point.tokens),y1:y(point.total),y2:bottom,class:'scope-cursor'});
+      mark('circle', {cx:x(point.tokens),cy:y(point.total),r:active?5:2.5,class:active?'scope-dot selected':'scope-dot'});
+    }
+    mark('text', {x:left,y:128}, '0 tokens');
+    mark('text', {x:right,y:128,'text-anchor':'end'}, number(last.tokens)+' tokens');
+    scope.replaceChildren(fragment);
+    scopeSelection = series.findIndex(point => point.tokens === build.tokens);
+    scope.setAttribute('aria-valuenow',String(build.tokens));
+    scope.setAttribute('aria-valuetext',number(build.tokens)+' tokens, '+gib(series[scopeSelection].total)+' required');
+    $('#scope-position').textContent = gib(series[scopeSelection].total)+' / '+gib(build.capacity)+' budget';
+  }
+  function scrubScope(event) {
+    const transform = scope.getScreenCTM();
+    if (!transform) return;
+    const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(transform.inverse());
+    const tokens = (local.x - plotBox.left) / (plotBox.right - plotBox.left) * OPTIONS.tokens.at(-1);
+    const closest = OPTIONS.tokens.reduce((a,b) => Math.abs(b-tokens)<Math.abs(a-tokens)?b:a);
+    if (closest !== OPTIONS.tokens[scopeSelection]) onChange('tokens',closest);
+  }
+  scope.onpointerdown = event => { if (event.button !== 0) return; scope.setPointerCapture(event.pointerId); scrubScope(event); };
+  scope.onpointermove = event => { if (scope.hasPointerCapture(event.pointerId)) scrubScope(event); };
+  scope.onkeydown = event => {
+    const index = {ArrowRight:scopeSelection+1,ArrowUp:scopeSelection+1,ArrowLeft:scopeSelection-1,ArrowDown:scopeSelection-1,Home:0,End:OPTIONS.tokens.length-1}[event.key];
+    if (index === undefined) return;
+    event.preventDefault();
+    onChange('tokens',OPTIONS.tokens[Math.max(0,Math.min(index,OPTIONS.tokens.length-1))]);
+  };
+
   function allocationRow(name, result, scale) {
     const row = document.createElement('div'); row.className = 'trace-allocation-row';
     const label = document.createElement('span'); label.className = 'trace-row-label';
@@ -113,7 +174,9 @@ export function createTrace({ onChange, onExample, onBaseline, onReset }) {
       }
       tr.append(dependency); $('#trace-comparison').append(tr);
     }
-    contextSeries(build).forEach((point, index) => {
+    const series = contextSeries(build);
+    drawScope(series, build);
+    series.forEach((point, index) => {
       const step = steps[index];
       step.button.setAttribute('aria-pressed', String(point.tokens === build.tokens));
       step.button.classList.toggle('over', !point.fits);

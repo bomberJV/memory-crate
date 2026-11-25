@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml/badge.svg)](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml) · [Open it on brandonfhuang.com](https://brandonfhuang.com/projects/play/memory/)
 
-Compare the same model reading one configuration setting and its whole configuration file. Each trace shows when the first token appeared and how much KV cache the input occupied. [Capture protocol and raw repetitions](experiment/README.md)
+Compare the same model reading one setting, the model configuration and the combined model and tokenizer configurations. Each trace shows when the first token appeared and how much KV cache the input occupied. [Capture protocol and raw repetitions](experiment/README.md)
 
 Inspect the token that pushes a third request over a 24 GiB memory budget. Move its arrival, change weight precision, or shorten its context. The chart and the original packing workshop use the same calculator for shared weights, private KV caches and an assumed reserve.
 

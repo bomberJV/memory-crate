@@ -23,10 +23,10 @@ import { mountDeviceRun } from './device-run.js';
   } catch { el('status').textContent = 'The recording could not load. Reload to try again.'; return; }
   if (embedded) el('raw').href = URL.createObjectURL(new Blob([embedded.textContent],{type:'application/json'}));
   el('question').textContent = record.question;
-  const runs = [record.cases.short,record.cases.long];
+  const runs = [record.cases.short,record.cases.long,record.cases.bundle];
   const samples = runs.map(r => r.runs[r.shown].steps);
   const span = Math.ceil(Math.max(...samples.map(steps => steps.reduce((n,s)=>n+s.ns/1e6,0)))/500)*500;
-  const names = ['One setting','Full configuration'];
+  const names = ['One setting','Model file','Model + tokenizer'];
   for (const [i,c] of runs.entries()) {
     const sample = samples[i], first = sample[0].ns/1e6;
     const row = add('div', el('traces'), undefined, 'row');
@@ -49,7 +49,7 @@ import { mountDeviceRun } from './device-run.js';
   add('span',scale,'0 s'); add('span',scale,(span/2000)+' s'); add('span',scale,(span/1000)+' s');
   const key = add('div',el('traces'),undefined,'key');
   add('span',key,'Reading the input'); add('span',key,'Subsequent output tokens');
-  el('finding').textContent = 'Reading the full configuration took '+milliseconds(samples[1][0].ns/1e6)+' to the first token. Reading one setting took '+milliseconds(samples[0][0].ns/1e6)+'.';
+  el('finding').textContent = 'Reading both files took '+milliseconds(samples[2][0].ns/1e6)+' to the first token. Reading one setting took '+milliseconds(samples[0][0].ns/1e6)+'.';
   el('method').textContent = record.model+' · '+record.license+' · '+record.revision+'. Recorded in '+record.dtype+' on '+record.cpu+' with '+record.threads+' threads. Each trace is the run with the median first-token time among '+runs[0].runs.length+' warm repetitions. The excerpts show the first '+record.maxOutputTokens+' tokens.';
   mountDeviceRun(record, 'device-worker.js');
 })();

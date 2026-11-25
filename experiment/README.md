@@ -1,6 +1,6 @@
 # Before the first word
 
-This chapter replays CPU inference on a fixed public model. The landing view aligns two separately timed requests at the start of prefill. Each prompt asks for `num_hidden_layers`. The short input quotes that setting. The long input quotes the full `config.json` from the pinned model revision. Both use the same chat template.
+This chapter replays CPU inference on a fixed public model. The landing view aligns three separately timed requests at the start of prefill. Each prompt asks for `num_hidden_layers`. The short input quotes that setting. The long input quotes the full `config.json` from the pinned model revision. The third input adds the pinned `tokenizer_config.json`. All use the same chat template. The tokenizer file contains additional content including special tokens. The new input changes both length and content.
 
 ## Reproduce the capture
 
@@ -14,7 +14,7 @@ The raw file contains initialization time after model download, the first genera
 
 Measured KV payload sums live key/value tensor elements multiplied by their actual element sizes. The independent estimate uses the checked-in model dimensions and FP32 cache precision. Process RSS is sampled after each forward pass and is a process-wide snapshot. It includes Python and runtime allocations. Parameter payload sums unique model parameters. Peak RSS, device memory, power and answer quality were not measured. This 135M experiment is distinct from the hypothetical 8B teaching fixture.
 
-[Recording workflow](https://github.com/bomberJV/memory-crate/actions/runs/45698010275) · [Raw recordings](recorded-run.json)
+[Recording workflow](https://github.com/bomberJV/memory-crate/actions/runs/45699249606) · [Raw recordings](recorded-run.json)
 
 ## Homepage export
 

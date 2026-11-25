@@ -63,3 +63,30 @@
 
 .ft-cache{display:block;margin-top:5px;color:var(--ft-soft);font-variant-numeric:tabular-nums}
 .ft-head{border-top:1px solid var(--ft-line)}
+
+/* Each lane has its own measured intervals and the same horizontal time scale. */
+.ft-stage{background:#101915;border:1px solid #45594d;box-shadow:none}
+.ft-stage-head>div:first-child{text-align:left}.ft-instrument{margin:0 0 5px;color:#acbcaf;font:12px/1.4 ui-monospace,monospace}
+.ft-stage-head h3{font:550 clamp(23px,2.7vw,38px)/1.15 system-ui,sans-serif;letter-spacing:-.045em}
+.ft-stage-head>div:last-child{max-width:15ch}.ft-stage-head small{display:block;margin-top:4px}
+.ft-axis{display:flex;justify-content:space-between;font:12px/1.5 ui-monospace,monospace;color:#9fb6a7;border-bottom:1px solid #405447}
+.ft-lane,.ft-lane:last-child{--lane:#8edbc8;padding:12px 0}.ft-lane[data-case=long]{--lane:#c6e98d}.ft-lane[data-case=bundle]{--lane:#eaba87}
+.ft-lane-head{gap:3px 12px}.ft-lane-head small,.ft-cache{color:#b6c6b8}
+.ft-track{height:24px;border-block:1px solid #405247;background:repeating-linear-gradient(90deg,#18241e 0 calc(25% - 1px),#425349 calc(25% - 1px) 25%)}
+.ft-track .ft-prefill,.ft-track .ft-step{top:3px;height:16px}.ft-track .ft-shade{background:#10191566}.ft-track .ft-cursor{box-shadow:none;background:#f9fbea}
+.ft-answer{min-height:1.4em;font:500 clamp(16px,1.8vw,22px)/1.4 ui-monospace,monospace;letter-spacing:-.045em}
+.ft-jumps span,.ft-rate-label,.ft-inspector label{font:13px/1.4 ui-monospace,monospace;color:#b4c3b6}
+.ft select{min-height:40px;padding:5px 9px;background:#15221b;color:var(--ft-ink);border:1px solid #566e58}
+.ft-control{display:flex}.ft-control #ft-clock{font-variant-numeric:tabular-nums}.ft-control label.ft-rate-label{position:static;width:auto;height:auto;clip-path:none;overflow:visible}
+.ft-inspector{border:1px solid #43574b;background:#131d18;padding:clamp(14px,2.5vw,30px)}
+.ft-inspector-head,.ft-inspector-head label{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.ft-inspector h3{margin:0;font-size:21px}
+.ft-event{font:14px/1.5 ui-monospace,monospace;color:#c9e7aa;margin:15px 0 8px}
+.ft-receipt{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 16px;margin:0;padding:13px 0;border-block:1px solid #35483c;font-variant-numeric:tabular-nums}
+.ft-receipt dt{font:13px/1.4 system-ui,sans-serif;color:#b5c2b5}.ft-receipt dd{margin:3px 0 0;font:550 clamp(16px,2vw,24px)/1.3 ui-monospace,monospace;letter-spacing:-.05em}
+.ft-token-rail{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.ft .ft-token{min-width:37px;min-height:40px;padding:4px 8px;background:#17221b;border-color:#435347;color:#a4b1a6;font:14px/1.2 ui-monospace,monospace}
+.ft .ft-token.emitted{color:#deebdb;border-color:#819a80}.ft .ft-token[aria-pressed=true]{background:#cbe8a2;color:#162114;border-color:#d9f2b4}
+@media(max-width:600px){.ft-receipt{grid-template-columns:repeat(2,minmax(0,1fr))}.ft-inspector-head label{font-size:12px}.ft .ft-token,.ft .ft-jumps button{min-height:44px}.ft-control{gap:7px}.ft-stage-head small{font-size:11px}.ft-answer{min-height:1.6em}.ft-axis{font-size:11px}.ft-track{height:21px}.ft-track .ft-prefill,.ft-track .ft-step{height:13px}}
+
+.ft .device-controls {align-items:center}
+.ft .device-input-label {display:inline-flex;align-items:center;gap:7px;font-family:var(--ft-mono,monospace)}
+.ft .device-input-label[hidden] {display:none}
