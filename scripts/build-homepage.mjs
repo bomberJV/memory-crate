@@ -30,11 +30,19 @@ const end = source.indexOf('</section>',first);
 if (first<0 || end<0) throw Error('Chapter missing from the project entry point.');
 const chapter = source.slice(first,end+10)
   .replace('data-record="../experiment/recorded-run.json"','data-record="recorded-run.json"')
-  .replace('href="#workload"','href="/projects/play/memory/"');
+  .replace('data-worker="observation/device-worker.js"','data-worker="../observation/device-worker.js"')
+  .replace('href="#inference-trace"','href="/projects/play/memory/#inference-trace"')
+  .replace('<h2 id="ft-title">','<h1 id="ft-title">').replace('</em></h2>','</em></h1>');
 const page = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Before the first word | Brandon Huang</title><meta name="description" content="Watch two recorded language model runs answer the same question."><link rel="stylesheet" href="/projects/play/shared/play.css"><link rel="stylesheet" href="chapter.css"><script defer src="chapter.js"></script></head><body><header><a class="brand" href="/"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a href="/projects/">Projects</a></header><main>'+chapter+'</main><footer>By Brandon Frank Han-Chween Huang</footer></body></html>';
 write(base+'index.html',page);
 write(base+'chapter.css',read('memory/first-token.css'));
 const model = read('memory/model.js').replace(/^export /gm,'');
+const controller = read('memory/observation/device-run.js').replace(/^export /gm,'');
 const view = read('memory/first-token.js').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
-write(base+'chapter.js', "(() => {\n'use strict';\n"+model+'\n'+view+'\nmountFirstToken();\n})();\n');
+write(base+'chapter.js', "(() => {\n'use strict';\n"+model+'\n'+controller+'\n'+view+'\nmountFirstToken();\n})();\n');
 write(base+'recorded-run.json',raw);
+
+const observation = 'projects/play/memory/observation/';
+const capture = '../first-token/recorded-run.json';
+write(observation+'index.html',read('memory/observation/index.html').replaceAll('../../experiment/recorded-run.json',capture));
+for (const file of ['observation.css','observation.js','device-run.js','device-worker.js']) write(observation+file,read('memory/observation/'+file));

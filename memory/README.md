@@ -1,8 +1,10 @@
 # Memory Crate
 
-An interactive inference-memory study and packing workshop by Brandon Frank Han-Chween Huang. The opening experiment follows three independent requests through one shared model. Inspect the first token over budget and try different arrival orders, weight precisions and prompt lengths.
+The standalone page opens with the 8B memory estimate. Follow **Token profiler** to replay the 64-, 434- and 1,481-token SmolLM2 runs. **Measure inference on your device** accepts any of the three inputs and loads the pinned browser runtime and weights after a click. Each recording remains usable when device inference is unavailable. The single-file edition embeds the CPU record and worker source; live inference needs network access on first use.
 
-Plain HTML, CSS and browser JavaScript. No build step, remote services, vendor model presets, or runtime dependencies.
+An inference-memory calculator by Brandon Frank Han-Chween Huang. The opening comparison holds an 8B model at 16-bit precision and adds 8,192 cached tokens. Set your own baseline to compare weights, KV cache and assumed reserve. The optional three-request study follows the same accounting across overlapping requests.
+
+The calculator and recorded comparison use plain HTML, CSS and browser JavaScript. On-device generation loads Transformers.js and the pinned ONNX model on demand.
 
 ## Run
 
@@ -14,11 +16,11 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000/memory/`. ES modules require HTTP; do not open `index.html` directly from the filesystem. The shared stylesheet and browser helpers live in `../shared/`.
 
-For a self-contained edition, run `node scripts/build-preview.mjs preview.html` and open the file in a browser. It embeds the chart, calculator and workshop. The hosted edition includes separate workshop narration.
+For a self-contained edition, run `node scripts/build-preview.mjs preview.html` and open the file in a browser. It embeds the calculator, CPU recording, browser worker and workshop. The hosted edition includes separate workshop narration.
 
 ### Before the first word
 
-Replay two measured prompts, inspect the raw repetitions, and compare a single-digit amendment to the same departure board. The pinned CPU capture and full protocol are in [the experiment directory](../experiment/README.md). The 8B workload below is a separate estimate.
+Compare the time to the first token and the observed cache payload when the same model reads one setting, the model file or the model and tokenizer files. The pinned CPU capture and full protocol are in [the experiment directory](../experiment/README.md). The 8B workload below is a separate estimate.
 
 ### The third request
 
@@ -70,7 +72,7 @@ https://huggingface.co/docs/transformers/en/cache_explanation
 
 ## Inside an Inference: first milestone
 
-The 8B workshop estimates storage and dependencies. Its reserve is an assumption. The separate opening chapter replays actual CPU inference from a smaller model.
+The 8B workshop estimates storage and dependencies. Its reserve is an assumption. The timing chapter replays actual CPU inference from a smaller model.
 
 The guided fixture starts with 8B parameters at 16-bit weight precision, a 16-GiB budget, zero cached tokens, one sequence and a 1-GiB assumed reserve. It initially needs approximately 15.901 GiB. Adding 8,192 cached tokens adds exactly 1 GiB of cache, bringing the total to approximately 16.901 GiB and exceeding the budget by approximately 0.901 GiB. Shared weights and assumed reserve remain fixed.
 

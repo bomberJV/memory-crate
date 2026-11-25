@@ -16,6 +16,7 @@ execFileSync(process.execPath, [path.join(__dirname, 'build-preview.mjs'), singl
 const routes = new Map([['/preview.html', single], ['/memory/', path.join(repo, 'memory/index.html')]]);
 for (const [directory, names] of Object.entries({
   memory: ['app.js', 'app.css', 'model.js', 'trace.js', 'workload-model.js', 'workload-plot.js', 'workload.js', 'workload.css', 'first-token.css', 'first-token.js'],
+  'memory/observation': ['device-run.js','device-worker.js'],
   'memory/admission': ['admission.js', 'admission.css', 'scenario.js'],
   experiment: ['recorded-run.json'],
   shared: ['core.js', 'play.css', 'narration.js', 'narration.css', 'narration-voice.js', 'opus-frames.js', 'symbols.woff']
@@ -42,23 +43,33 @@ async function capture(page, name) {
 async function checkRecording(page, phone) {
   const byId = id => page.locator('#'+id);
   await byId('ft-play').waitFor();
-  await capture(page, phone ? 'phone-first-token':'desktop-first-token');
-  assert.equal(await byId('ft-factor').textContent(), '11.5×');
+  await page.locator('.ft-stage').screenshot({ path:path.join(output,phone ? 'phone-first-token.jpg':'desktop-first-token.jpg') });
+  const recorded = JSON.parse(fs.readFileSync(path.join(repo, 'experiment/recorded-run.json'),'utf8'));
+  const selected = name => {const c=recorded.cases[name]; return c.runs[c.shown].steps;};
+  const short=selected('short'), long=selected('long'), bundle=selected('bundle');
+  assert.equal(await page.locator('.ft-lane').count(),3);
+  assert.equal(await byId('ft-factor').textContent(), (bundle[0].ns / short[0].ns).toFixed(1)+'×');
+  assert.equal(await page.locator('.ft-cache').first().textContent(), (short[0].kvBytes/2**20).toFixed(2)+' MiB KV cache after input');
   await byId('ft-first').click();
   const answers = page.locator('.ft-answer');
-  assert.equal(await answers.nth(0).innerText(), 'The');
+  assert.equal(await answers.nth(0).innerText(), short[0].piece);
   assert.match(await answers.nth(1).innerText(), /Reading/);
   await byId('ft-next').click();
-  assert.equal(await answers.nth(1).innerText(), 'The');
-  if(phone) await byId('ft-edit').tap(); else { await byId('ft-edit').focus(); await page.keyboard.press('Enter'); }
-  assert.match(await answers.nth(0).innerText(), /Platform 4/);
-  assert.match(await answers.nth(1).innerText(), /Platform 9/);
+  assert.equal(await answers.nth(1).innerText(), long[0].piece);
+  await byId('ft-bundle').click();
+  assert.equal(await byId('ft-inspect-run').inputValue(),'bundle');
+  assert.equal(await byId('ft-token-id').textContent(),String(bundle[0].id));
+  await page.locator('#ft-token-rail button').last().click();
+  const last=bundle.at(-1);
+  assert.equal(await byId('ft-kv-bytes').textContent(),last.kvBytes.toLocaleString('en-US'));
+  assert.equal(await byId('ft-positions').textContent(),last.positions.toLocaleString('en-US'));
+  assert.ok((await answers.nth(2).innerText()).includes(recorded.cases.bundle.runs[recorded.cases.bundle.shown].output));
+  await byId('ft-speed').selectOption('1');
   await byId('ft-play').click();
-  await page.waitForFunction(() => document.querySelector('#ft-play').textContent === 'Replay both runs');
-  assert.match(await answers.nth(1).innerText(), /Platform 9/);
-  await byId('ft-edit').click();
+  await page.waitForFunction(() => document.querySelector('#ft-play').textContent === 'Replay all runs');
+  assert.ok((await answers.nth(1).innerText()).includes(recorded.cases.long.runs[recorded.cases.long.shown].output));
   await page.locator('.ft-evidence > summary').click();
-  assert.match(await byId('ft-stats').innerText(), /1,478 ms/);
+  assert.ok((await byId('ft-stats').innerText()).includes(Math.round(bundle[0].ns/1e6).toLocaleString('en-US')+' ms'));
   const download = page.waitForEvent('download');
   await byId('ft-download').click();
   const file=await download;
@@ -76,14 +87,33 @@ async function runWorkload(browser, url, phone) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(url);
-  await checkRecording(page, phone);
-  await page.locator("#workload").evaluate(e => e.scrollIntoView({behavior:"instant"}));
-  await page.locator('#load-peak').waitFor();
+  await page.locator('#trace-total').waitFor();
   const textOf = selector => page.locator(selector).innerText();
   const click = async selector => {
     const element = page.locator(selector);
     if (phone) await element.tap(); else await element.click();
   };
+  assert.equal(await textOf('#trace-total'), '16.901 GiB');
+  assert.match(await textOf('#trace-difference'), /KV cache grew from 0 to 1 GiB/);
+  await capture(page, phone ? 'calculator-phone' : 'calculator-desktop');
+  await page.locator('#context-scope-plot').focus();
+  await page.keyboard.press('End');
+  assert.equal(await page.locator('#trace-tokens').inputValue(),'32768');
+  await page.keyboard.press('Home');
+  assert.equal(await page.locator('#context-scope-plot').getAttribute('aria-valuenow'),'0');
+  await click('#context-steps button:first-child');
+  assert.equal(await textOf('#trace-total'), '15.901 GiB');
+  await page.locator('#trace-sequences').selectOption('2');
+  await page.locator('#trace-tokens').selectOption('8192');
+  assert.match(await textOf('#trace-difference'), /KV cache grew from 0 to 2 GiB/);
+  await click('#trace-baseline');
+  assert.match(await textOf('#trace-difference'), /matches the baseline/);
+  await click('.experiment-links a[href="#first-token"]');
+  await checkRecording(page, phone);
+  assert.ok(await page.locator('#run').isEnabled());
+  assert.equal(await page.locator('#live-raw').isVisible(), false);
+  await click('#workload-detail > summary');
+  await page.locator('#load-plot').scrollIntoViewIfNeeded();
   assert.equal(await textOf('#load-peak'), '24.901 GiB');
   assert.match(await textOf('#plan-result-title'), /Request C.*810/);
   const plot = page.locator('#load-plot');
@@ -164,6 +194,7 @@ async function runWorkload(browser, url, phone) {
   await page.locator('#trace-sequences').selectOption('2');
   assert.match(await page.locator('#trace-cache-math').textContent(), /2 GiB/);
   await click('#trace-reset');
+  await click('.trace-evidence > summary');
   assert.match(await textOf('#trace-changes'), /No inputs changed/);
   assert.ok(await page.getByRole('link', { name: /Inspect the separate medical AI research/ }).isVisible());
   assert.deepEqual(errors, []);
@@ -181,7 +212,7 @@ async function runWorkload(browser, url, phone) {
     for (const width of [320, 768]) {
       const page = await browser.newPage({ viewport: { width, height: 800 } });
       await page.goto(base + '/preview.html');
-      await page.locator('#load-peak').waitFor();
+      await page.locator('#trace-total').waitFor();
       await page.locator('#ft-play').waitFor();
       await checkWidth(page);
       await page.close();
@@ -209,6 +240,8 @@ async function runWorkload(browser, url, phone) {
     }
     const paper = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 320, height: 640 } });
     await paper.goto(base + '/preview.html');
+    assert.match(await paper.locator('#first-token').innerText(), /5,416 ms/);
+    await paper.locator('#workload-detail > summary').click();
     assert.match(await paper.locator('.paper-load').innerText(), /40,960 bytes/);
     assert.equal(await paper.locator('#load-play').isVisible(), false);
     await paper.close();

@@ -33,3 +33,48 @@
 @media(max-width:850px){.trace-layout{grid-template-columns:1fr}.trace-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.trace-heading{gap:24px}.trace-heading>p{font-size:12px}.context-step{padding:15px 12px}.context-step strong{font-size:20px}}
 @media(max-width:600px){.inference-trace{padding-top:24px;margin-bottom:42px}.trace-heading{grid-template-columns:1fr;gap:18px}.trace-heading h2{font-size:36px}.trace-heading>p{max-width:none;font-size:13px}.trace-scope{font-size:11px}.trace-actions{gap:8px}.trace-actions button{font-size:11px;padding:11px 13px}.trace-board{padding:20px}.trace-board-top{gap:12px}.trace-big-number strong{font-size:39px}.trace-controls{grid-template-columns:1fr 1fr}.trace-controls label{font-size:10px}.context-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.context-step{min-height:125px;padding:16px}.context-step:last-child{grid-column:1/-1;min-height:108px}.context-step strong{font-size:24px}.trace-handoff{grid-template-columns:1fr;gap:12px;padding-top:22px}.trace-handoff a{grid-column:1}.trace-table-heading h3{font-size:22px}}
 
+
+/* The calculator is the project opening. Keep its boundary and first controls in view. */
+.inference-trace{margin:0 0 32px;padding:0;border-top:0}
+.calculator-opening{margin:0 0 24px}
+.calculator-opening .kicker{margin:0 0 6px}
+.calculator-opening h1{font-size:clamp(45px,6vw,80px);line-height:1.02;margin:0}
+.calculator-opening>p:last-child{margin:12px 0 0;max-width:62ch;font-size:clamp(16px,1.7vw,20px);color:var(--muted)}
+.trace-big-number{margin:16px 0 0}
+.trace-verdict{min-height:0;margin:5px 0 16px;color:var(--ink);font-size:15px}
+.trace-allocation-row{margin:14px 0}
+.trace-track{height:25px}
+.trace-row-label,.trace-row-caption,.trace-legend span{font-size:12px}
+.trace-row-caption{margin-top:6px}
+.trace-legend{margin:15px 0}
+.trace-difference{margin:15px 0 0;color:var(--ink);font-size:15px;line-height:1.5}
+.trace-board .context-heading{margin:18px 0 8px}.context-heading h3{font-size:18px}.context-heading p{margin:2px 0}
+.trace-board .context-steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.trace-board .context-step{min-height:44px;padding:9px 4px;display:grid;place-items:center;gap:1px}
+.trace-board .context-step strong{font-size:clamp(13px,1.5vw,20px)}
+.trace-board .context-step:last-child{grid-column:auto}
+.trace-board .context-step .step-size,.trace-board .context-step .step-status{display:none}
+.trace-actions{margin-top:14px}
+.trace-action-status:empty{display:none}
+.trace-evidence,.trace-calculation{border-top:1px solid var(--line);padding:12px 0;margin:12px 0 0}
+.trace-evidence summary,.trace-calculation summary{cursor:pointer;font-size:15px}
+.trace-handoff{margin-top:18px}
+@media(max-width:600px){.calculator-opening{margin-bottom:14px}.calculator-opening>p:last-child{margin-top:6px}.trace-board{padding:15px}.trace-legend{gap:5px 10px}.trace-board-top{gap:4px 12px}.trace-legend span,.trace-row-caption{font-size:11px}.trace-big-number{margin-top:10px}.trace-big-number strong{font-size:32px}.trace-track{height:17px}.trace-row-label{margin-bottom:6px}.trace-difference{font-size:14px}.trace-constraint-panel{padding:16px}.trace-controls label{font-size:12px}.trace-board .context-steps{gap:3px}.trace-board .context-step{padding:8px 1px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.calculator-opening{display:grid;grid-template-columns:minmax(0,1fr) minmax(310px,.85fr);gap:clamp(20px,5vw,78px);align-items:center;margin-bottom:24px}
+.calculator-intro>p:not(.kicker){max-width:52ch;margin:10px 0 18px;color:var(--muted);font-size:clamp(16px,1.6vw,21px)}
+.calculator-intro .experiment-links{margin:0}
+.context-scope{min-width:0;margin:0;padding:14px 18px 12px;border:1px solid #445a3b;background:#111c14}
+.context-scope figcaption{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.context-scope figcaption strong{font-size:15px;font-weight:550}.context-scope figcaption span{font:12px/1.5 ui-monospace,monospace;color:#c8d8bb}
+#context-scope-plot{width:100%;display:block;cursor:crosshair;touch-action:pan-y;overflow:visible}
+#context-scope-plot text{fill:#b5c5a9;font:13px ui-monospace,monospace}
+.scope-grid{stroke:#324638;stroke-dasharray:2 4}.scope-budget{stroke:#edb09b;stroke-dasharray:6 4}.scope-fill{fill:#8ebf70;fill-opacity:.09}
+.scope-line{stroke:#c8ee99;stroke-width:2;fill:none}.scope-cursor{stroke:#a5ceab;stroke-dasharray:2 2}.scope-dot{fill:#96bb99}.scope-dot.selected{fill:#d6f4ac;stroke:#1b291a;stroke-width:1.7}
+.context-scope .context-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0}
+.context-scope .context-step,.context-scope .context-step:last-child{min-height:38px;grid-column:auto;align-items:center;justify-content:center;padding:4px}
+.context-scope .context-step strong{font:550 13px/1.3 ui-monospace,monospace;letter-spacing:0}
+.context-scope .step-size,.context-scope .step-status{display:none}
+.trace-board .trace-track{height:26px}.trace-track::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to right,transparent 0 calc(6.25% - 1px),#10171045 calc(6.25% - 1px) 6.25%)}
+@media(max-width:750px){.calculator-opening{grid-template-columns:minmax(0,1fr);gap:12px}.calculator-intro>p:not(.kicker){margin:7px 0}.context-scope{padding:10px 13px}.context-scope .context-step,.context-scope .context-step:last-child{min-height:44px}.trace-board .trace-track{height:20px}}

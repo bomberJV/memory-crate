@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#181516"><title>Inside an Inference · Brandon Huang</title>
+<meta name="description" content="Observe the time between giving a language model a question and receiving its first token. Examine the recording or measure your own device.">
+<link rel="stylesheet" href="observation.css"><script type="module" src="observation.js"></script>
+</head><body>
+<header><span class="brand">B<span>.</span></span><span>Brandon Frank Han-Chween Huang</span></header>
+<main data-record="../../experiment/recorded-run.json">
+<h1>Inside an <em>inference.</em></h1>
+<p class="lede">Before a language model can write a single word, it has to read what you gave it.</p>
+<figure aria-labelledby="fig-title">
+<figcaption><h2 id="fig-title">Time to the first token</h2><span>Recorded CPU experiment</span></figcaption>
+<p class="prompt" id="question">How many layers does the model have?</p>
+<div id="traces"></div>
+<p id="finding">The three inputs quote one setting, the model configuration, or both model and tokenizer configurations.</p>
+</figure>
+<section class="device" aria-labelledby="device-title"><div><h2 id="device-title">On your device</h2>
+<p id="device-note">Choose an input for the 8-bit browser model. The first run downloads about 137 MB of weights plus the runtime.</p></div>
+<div class="device-controls"><label class="device-input-label">Input<br><select id="device-input" disabled></select></label><button type="button" id="run" disabled>Run on this device</button><button type="button" id="stop" hidden>Stop</button></div>
+<p id="status" role="status"></p><blockquote id="live-output" hidden></blockquote><p id="live-result" hidden></p>
+</section>
+<details><summary>Inputs, measurements and limitations</summary>
+<p id="method"></p><p>The browser uses 8-bit ONNX weights and a single WebAssembly thread. It can generate different tokens from the full-precision recording. Browser timings run from generation start to each emitted token. Loading time is separate. GPU memory and power are unmeasured.</p>
+<div id="inputs"></div><a id="raw" href="../../experiment/recorded-run.json" download="recorded-run.json">Recorded measurements (JSON)</a> <a id="live-raw" hidden download="device-run.json">Device measurements (JSON)</a>
+</details>
+<noscript><p>Enable JavaScript to inspect the recording or run the model. The raw recording above includes the three inputs and each generated token.</p></noscript>
+</main></body></html>

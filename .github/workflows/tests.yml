@@ -22,6 +22,10 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/workload-checks" --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1
           NODE_PATH="$RUNNER_TEMP/workload-checks/node_modules" node scripts/check-workload.cjs "$RUNNER_TEMP/workload-pictures"
+      - name: Verify live CPU inference in Chrome
+        run: |
+          node scripts/build-preview.mjs "$RUNNER_TEMP/combined.html"
+          NODE_PATH="$RUNNER_TEMP/workload-checks/node_modules" node scripts/check-device.cjs "$RUNNER_TEMP/combined.html" "$RUNNER_TEMP/workload-pictures"
       - name: Save screen checks
         if: always()
         uses: actions/upload-artifact@v4
