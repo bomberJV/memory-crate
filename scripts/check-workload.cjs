@@ -143,6 +143,7 @@ async function runWorkload(browser, url, phone) {
   await page.locator('#trace-sequences').selectOption('2');
   assert.match(await page.locator('#trace-cache-math').textContent(), /2 GiB/);
   await click('#trace-reset');
+  await click('.trace-evidence > summary');
   assert.match(await textOf('#trace-changes'), /No inputs changed/);
   assert.ok(await page.getByRole('link', { name: /Inspect the separate medical AI research/ }).isVisible());
   assert.deepEqual(errors, []);
