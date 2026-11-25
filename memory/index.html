@@ -1,10 +1,44 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101710"><title>Memory Crate — Brandon Frank Han-Chween Huang</title><meta name="description" content="A visual memory-packing workshop: solve four hardware puzzles, compare precision, and see where the memory goes."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"></head>
-<body><a class="skip-link" href="#workshop">Skip to the workshop</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
-<main><div class="page-opening"><div><p class="kicker">06 / THE HARDWARE PUZZLE</p><h1>Will<br> <em>it fit?</em></h1><p class="intro">Pick a model, a precision, and a memory budget. Then make room for the cache and see where the space goes.</p></div><div class="opening-badge" aria-hidden="true"><span>HANDLE WITH</span><b>care.</b><span>MEMORY CRATE / 006</span></div></div>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101710"><title>Inside an Inference | Memory Crate by Brandon Frank Han-Chween Huang</title><meta name="description" content="Estimate model weights, KV cache and reserve. Change a constraint and compare memory use against a baseline."><link rel="stylesheet" href="../shared/play.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="workload.css"><script type="module" src="app.js"></script><script type="module" data-narration="memory" data-narration-root="memory-workshop" src="../shared/narration.js"></script><meta name="playground-narration" content="recorded"><noscript><style>.mission-section,.workshop,.precision-section,#storage-note{display:none}</style></noscript></head>
+<body><a class="skip-link" href="#inference-trace">Skip to the calculator</a><header><a class="brand" href="../index.html"><b>B.</b>BRANDON FRANK HAN-CHWEEN HUANG</a><a class="back" href="../index.html">← Projects</a></header>
+<main>
+<section id="inference-trace" class="inference-trace" aria-labelledby="calculator-title">
+  <div class="calculator-opening">
+    <p class="kicker">Memory Crate</p>
+    <h1 id="calculator-title">Will <em>it fit?</em></h1>
+    <p>A model’s weights take up memory before the first token. As the conversation grows, so does its cache.</p>
+  </div>
+  <div class="trace-interactive" hidden>
+
+    <div class="trace-layout">
+      <div class="trace-board">
+        <div class="trace-board-top"><span class="mono">Estimated memory</span><span id="trace-state" class="trace-state"></span></div>
+        <p class="trace-big-number"><strong id="trace-total"></strong><span id="trace-budget"></span></p>
+        <p id="trace-verdict" class="trace-verdict" role="status"></p>
+        <div id="trace-allocations"></div>
+        <div class="trace-legend"><span><i class="weight-key"></i>Weights · calculated</span><span><i class="cache-key"></i>KV cache · calculated</span><span><i class="reserve-key"></i>Reserve · assumed</span><span><i class="boundary-key"></i>Budget boundary</span></div>
+        <p id="trace-difference" class="trace-difference" aria-live="polite"></p>
+        <div class="context-heading"><h3>Context length</h3><p>Choose the number of cached tokens per sequence.</p></div>
+        <div id="context-steps" class="context-steps" role="group" aria-label="Cached tokens per sequence"></div>
+      </div>
+      <div class="trace-constraint-panel"><h3>Model and budget</h3><div id="trace-controls" class="trace-controls"></div><p id="trace-lock-note" class="trace-note"></p><p class="trace-note">Cache assumptions: 32 layers, 8 KV heads, 128 dimensions per head and 16-bit values.</p></div>
+    </div>
+
+    <div class="trace-actions"><button id="trace-baseline" type="button">Set current as baseline</button><button id="trace-reset" type="button">Reset to baseline</button><button id="trace-example" type="button">Load zero-context example</button></div>
+    <p id="trace-action-status" class="trace-action-status" role="status"></p>
+    <details class="trace-evidence"><summary>Compare every allocation</summary>
+    <div class="trace-table-heading"><h3>Allocation comparison</h3><p id="trace-changes"></p></div>
+    <div class="trace-table-scroll" role="region" aria-label="Allocation comparison table; scroll horizontally on small screens" tabindex="0"><table class="trace-table"><caption>Baseline and current allocations in GiB. Dependencies name the inputs used to calculate each row.</caption><thead><tr><th scope="col">Allocation / evidence</th><th scope="col">Baseline</th><th scope="col">Current</th><th scope="col">Delta</th><th scope="col">Result</th><th scope="col">Depends on</th></tr></thead><tbody id="trace-comparison"></tbody></table></div></details>
+    <details class="trace-calculation"><summary>Inspect the full calculation and units</summary><p><strong>Weights · calculated</strong><br><span id="trace-weight-math"></span></p><p><strong>KV cache · calculated</strong><br><span id="trace-cache-math"></span></p><p><strong>Estimated allocation</strong><br><span id="trace-total-math"></span></p><p>GB means 10⁹ bytes. GiB means 2³⁰ bytes. Reserve is a user assumption; activations, intermediates, quantization metadata, allocator behavior, occupancy, offloading and runtime layout are not separately modeled. Parameter count does not identify a real architecture.</p></details>
+  </div>
+  <noscript><div class="trace-static"><h3>A context-growth example</h3><p>8 billion parameters at 16 bits occupy 16 GB ≈ 14.901 GiB. With a 1 GiB assumed reserve and zero cached tokens, the estimate is 15.901 GiB against a 16 GiB budget.</p><p>At 8,192 tokens, the specified cache adds exactly 1 GiB: 16.901 GiB total, exceeding the budget by about 0.901 GiB. Doubling concurrent sequences doubles cache to 2 GiB; shared weights and reserve stay fixed. Changing weight precision leaves cache unchanged.</p><p>Enable JavaScript to change inputs and inspect their dependencies. This static example uses the same documented accounting fixture.</p></div></noscript>
+  <aside class="trace-handoff" aria-labelledby="handoff-title"><h3 id="handoff-title">Beyond memory</h3><p>This calculator estimates storage. The medical AI study evaluates model reliability in a separate experiment.</p><a href="https://github.com/bomberJV/medical-ai-research">Inspect the separate medical AI research ↗</a></aside>
+</section>
+<details class="analysis-workshop" id="memory-workshop"><summary>Open the memory workshop</summary>
+<div class="analysis-workshop-body">
 <section class="mission-section" aria-labelledby="missions-title"><div class="section-line"><h2 id="missions-title">Try a challenge. Or change whatever you want.</h2><span class="mono" id="progress-count">0 / 4 SOLVED</span></div><div id="mission-picker" class="mission-picker" aria-label="Choose a packing brief"><button type="button" class="mission-option" data-mission="sandbox" aria-pressed="true"><span class="mono">00 / FREE PLAY</span><strong>The workshop</strong><span>Change anything. See what happens.</span></button></div><div id="mission-brief" class="mission-brief"><div><span class="mono" id="brief-kicker">FREE PLAY / NO WRONG TURNS</span><h3 id="brief-title">What would you put in the box?</h3><p id="brief-description">Try a bigger model, more cached tokens, or fewer bits. See what each part takes up.</p></div><ul id="requirements" aria-label="Brief requirements" hidden></ul></div></section>
 <section id="workshop" aria-label="Memory packing workshop" class="workshop"><div class="visual-column"><div class="stage memory-stage" id="crate"><div class="crate-heading"><div><span class="mono">THE MEMORY CRATE</span><p id="build-label">8B / 16-BIT / 8 GiB</p></div><span id="crate-tag" class="crate-tag">OVER CAPACITY</span></div><div class="memory-top"><div><output id="memory-size">14.90</output><span class="unit">GiB of weights</span></div><div class="crate-meter"><span class="mono">TOTAL PLANNED</span><strong id="total-size">—</strong><span id="capacity-label">of 8 GiB</span></div></div><div id="memory-cells" role="img" aria-label="Memory allocation grid"></div><div class="crate-bottom"><span id="memory-caption"></span><span class="mono">64 CELLS / EXACT FRACTIONS</span></div><div id="overflow-tray" class="overflow-tray" hidden><div class="spill-blocks" aria-hidden="true"><i></i><i></i><i></i><i></i></div><p><strong id="overflow-size"></strong><span>doesn’t fit in this crate</span></p></div><div id="success-stamp" class="success-stamp" hidden aria-hidden="true">BRIEF<br> SOLVED ✓</div></div>
-<div class="allocation-key" aria-label="Memory breakdown"><div><i class="weight-key"></i><span>Weights</span><strong id="weights-breakdown">—</strong></div><div><i class="cache-key"></i><span>KV cache</span><strong id="cache-breakdown">—</strong></div><div><i class="reserve-key"></i><span>Manual reserve</span><strong id="reserve-breakdown">—</strong></div><div><i class="empty-key"></i><span>Unallocated</span><strong id="free-breakdown">—</strong></div></div>
+<div class="allocation-key" aria-label="Memory breakdown"><div><i class="weight-key"></i><span>Weights</span><strong id="weights-breakdown">—</strong></div><div><i class="cache-key"></i><span>KV cache</span><strong id="cache-breakdown">—</strong></div><div><i class="reserve-key"></i><span>Assumed reserve</span><strong id="reserve-breakdown">—</strong></div><div><i class="empty-key"></i><span>Unallocated</span><strong id="free-breakdown">—</strong></div></div>
 <p id="memory-status" class="status" role="status"></p><div class="test-actions"><button id="check-build" class="primary" type="button">Check the numbers ↗</button><button id="pin-build" type="button">Pin for comparison +</button><button id="reset-build" type="button">Reset build</button><button id="next-mission" type="button" hidden>Next brief →</button></div><p id="check-result" class="check-result" role="status">The crate updates as you go. Check the numbers when you’re ready.</p></div>
 <aside class="build-controls" aria-label="Build controls"><div class="controls-heading"><h2>What are we trying to fit?</h2><span class="mono">TAP TO SWAP</span></div><p id="controls-summary" class="controls-summary" aria-hidden="true"></p><fieldset><legend>01 / Model weights</legend><div id="models" class="choice-row" aria-label="Parameter count"><button data-parameter="parameters" data-value="3">3B</button><button data-parameter="parameters" data-value="8" aria-pressed="true">8B</button><button data-parameter="parameters" data-value="13">13B</button><button data-parameter="parameters" data-value="30">30B</button><button data-parameter="parameters" data-value="70">70B</button></div><div id="bits" class="choice-row" aria-label="Weight precision"><button data-parameter="bits" data-value="4">4-bit</button><button data-parameter="bits" data-value="8">8-bit</button><button data-parameter="bits" data-value="16" aria-pressed="true">16-bit</button><button data-parameter="bits" data-value="32">32-bit</button></div><p class="control-note">B = billion parameters. Fewer bits use less space; the quality tradeoff depends on the model.</p></fieldset>
 <fieldset><legend>02 / Space for a conversation</legend><label for="tokens">Cached tokens per sequence</label><select id="tokens" data-select="tokens"><option value="0">Weights only — no cache</option><option value="2048">2,048 tokens</option><option value="8192" selected>8,192 tokens</option><option value="16384">16,384 tokens</option><option value="32768">32,768 tokens</option></select><span class="field-label">Simultaneous sequences</span><div class="choice-row" id="sequences"><button data-parameter="sequences" data-value="1" aria-pressed="true">1×</button><button data-parameter="sequences" data-value="2">2×</button><button data-parameter="sequences" data-value="4">4×</button></div><p class="control-note">One shared set of weights, a separate cache per sequence. A fixed teaching architecture is used below.</p></fieldset>
@@ -12,4 +46,72 @@
 <section class="precision-section" aria-labelledby="precision-title"><div class="section-line"><div><p class="kicker">THE SAME BUILD / FOUR WAYS</p><h2 id="precision-title">What do fewer bits buy you?</h2></div><p>Same model, cache and reserve.<br> Only weight precision changes.</p></div><div id="precision-comparison" class="precision-comparison" aria-label="Compare weight precision"></div></section>
 <section id="pinned-section" class="pinned-section" aria-labelledby="pinned-title" hidden><div class="section-line"><h2 id="pinned-title">Two ideas, side by side.</h2><button id="clear-pins" type="button">Clear comparison</button></div><div id="pinned-builds" class="pinned-builds"></div></section>
 <details class="model-notes"><summary>The math, the assumptions, and what this does not tell you</summary><div class="notes-grid"><div><h3>Where the memory goes.</h3><p><strong>Ideal weight storage:</strong> parameters × bits ÷ 8 ÷ 2³⁰ GiB. A billion parameters means 10⁹ parameters; a GiB means 2³⁰ bytes.</p><p><strong>Illustrative KV cache:</strong> 2 × layers × KV heads × head dimension × cached tokens × sequences × bytes per value. This is a conventional full-attention key/value cache calculation.</p><p><strong>Manual reserve:</strong> a chosen allowance that is added to the total. It is not calculated from a runtime.</p></div><div><h3>The assumptions in this example.</h3><p>The cache always assumes <strong>32 layers, 8 KV heads, 128 dimensions per head and 16-bit cache values</strong>. The parameter count changes only the weights. These independent knobs do not describe a named or benchmarked model.</p><p>The estimate omits allocator behavior, activations, intermediate buffers, quantization metadata, architecture-specific caches, and device memory already in use. Real systems may partition or offload storage. A green crate is a solved arithmetic budget, <strong>not a guarantee that inference will run</strong>.</p><p>More bits does not automatically mean a better answer. The puzzle’s “highest precision” rule is a teaching objective, not a universal deployment recommendation.</p><a href="https://huggingface.co/docs/transformers/en/cache_explanation" target="_blank" rel="noopener noreferrer">Read the cache shape reference ↗</a></div></div></details>
-<p id="storage-note" class="note">Solved briefs and your last workshop build stay in this browser.</p></main><footer><span>A BRANDON HUANG PROJECT</span><a href="../README.md">Project documentation →</a><a href="../index.html">Back to projects ↗</a></footer></body></html>
+<p id="storage-note" class="note">Solved briefs and your last workshop build stay in this browser.</p>
+</div></details>
+<details class="analysis-workshop" id="workload-detail"><summary>Inspect three overlapping requests</summary>
+<section id="workload" class="workload-lab" aria-labelledby="workload-title">
+  <div class="workload-heading">
+    <div><p class="workload-series">Memory Crate / Inside an Inference</p><h2 id="workload-title">The third <em>request.</em></h2></div>
+    <p>Two 32,768-token requests fit in a 24 GiB memory budget. An 8,192-token request arrives while both are still in memory. When does it cross the line?</p>
+  </div>
+
+  <div class="workload-app" data-workload-ui hidden>
+    <div class="plan-strip" role="group" aria-label="Compare scenarios from the original workload">
+      <span>Compare from the original</span>
+      <div class="plan-buttons">
+        <button type="button" data-plan="original" aria-pressed="true">Original</button>
+        <button type="button" data-plan="queue" aria-pressed="false">Wait for A to finish</button>
+        <button type="button" data-plan="precision" aria-pressed="false">Use 8-bit weights</button>
+        <button type="button" data-plan="trim" aria-pressed="false">Trim request C</button>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+      <section class="profile-panel" aria-labelledby="profile-title">
+        <div class="plot-heading"><div><h2 id="profile-title">Memory across the workload</h2><p id="load-config"></p></div><div class="peak-readout"><span>Peak required</span><strong id="load-peak"></strong></div></div>
+        <div class="canvas-frame"><canvas id="load-plot" aria-hidden="true"></canvas></div>
+        <div class="time-controls"><button id="load-play" type="button">Replay trace</button><label for="load-scrub">Inspect event order</label><input type="range" id="load-scrub" min="0" max="327680" step="1" value="163840" aria-describedby="load-scrub-help"><span class="load-sr" id="load-scrub-help">Use the arrow keys to move one event at a time.</span></div>
+        <div class="lanes" aria-label="Request lifetimes in event order">
+          <div class="lane"><span>A</span><div class="lane-track"><i class="lane-block lane-a" id="lane-a"></i></div></div>
+          <div class="lane"><span>B</span><div class="lane-track"><i class="lane-block lane-b" id="lane-b"></i></div></div>
+          <div class="lane"><label for="load-arrival">C</label><div class="lane-track"><i class="lane-block lane-c" id="lane-c"></i><input type="range" id="load-arrival" min="3" max="8" step="1" value="4" aria-label="Request C arrival event" aria-describedby="lane-help"></div></div>
+        </div>
+        <div class="lane-caption"><p id="lane-help">Drag C’s handle to change when it starts.</p><span id="load-original-key" hidden><i></i> Original trace</span></div>
+      </section>
+
+      <aside class="cursor-panel" aria-labelledby="cursor-title">
+        <p class="load-overline">At the cursor</p><h2 id="cursor-title">Allocation</h2><p class="event-description" id="load-event"></p>
+        <dl class="allocation-ledger">
+          <div><dt><i class="swatch weight"></i>Shared weights</dt><dd id="load-weights"></dd></div>
+          <div><dt><i class="swatch reserve"></i>Assumed reserve</dt><dd id="load-reserve"></dd></div>
+          <div><dt><i class="swatch req-a"></i>Request A cache</dt><dd id="load-a"></dd></div>
+          <div><dt><i class="swatch req-b"></i>Request B cache</dt><dd id="load-b"></dd></div>
+          <div><dt><i class="swatch req-c"></i>Request C cache</dt><dd id="load-c"></dd></div>
+          <div class="ledger-total"><dt>Required</dt><dd id="load-total"></dd></div>
+        </dl>
+        <p id="load-state" class="load-state"></p>
+        <div class="cursor-jumps" role="group" aria-label="Inspect a position on the trace"><button type="button" id="load-last">Last fit</button><button type="button" id="load-first">First excess</button><button type="button" id="load-peak-jump">Peak</button></div>
+      </aside>
+    </div>
+
+    <section class="plan-result" aria-labelledby="plan-result-title"><div><p class="load-overline">Across the full workload</p><h2 id="plan-result-title"></h2><p id="plan-consequence"></p></div><div class="plan-difference"><span>Peak vs. original</span><strong id="plan-delta"></strong></div></section>
+
+    <details class="workload-detail" id="load-editor"><summary>Edit the workload</summary>
+      <form id="load-form"><div class="load-fields">
+        <label>Request A tokens<input id="edit-a" name="a" type="number" min="0" max="32768" step="1" required></label>
+        <label>Request B tokens<input id="edit-b" name="b" type="number" min="0" max="32768" step="1" required></label>
+        <label>Request C tokens<input id="edit-c" name="c" type="number" min="0" max="32768" step="1" required></label>
+        <label>Weight precision<select id="edit-bits" name="bits"><option value="4">4 bits</option><option value="8">8 bits</option><option value="16">16 bits</option></select></label>
+        <label>Estimated budget<select id="edit-capacity" name="capacity"><option value="16">16 GiB</option><option value="24">24 GiB</option><option value="32">32 GiB</option></select></label>
+        <label>Assumed reserve<select id="edit-reserve" name="reserve"><option value="0">0 GiB</option><option value="0.5">0.5 GiB</option><option value="1">1 GiB</option><option value="2">2 GiB</option></select></label>
+      </div><button type="submit" class="apply-load">Apply changes</button></form>
+    </details>
+    <details class="workload-detail" id="load-method"><summary>Inspect the calculation</summary><div class="load-method-body"><p id="load-unit-cost"></p><p id="load-byte-receipt"></p><p>The model and request lengths are hypothetical. The horizontal axis follows an authored event order. Each request grows to its target over one event interval and releases its entire private cache when it finishes. Shared-prefix reuse, paging, allocator overhead and quantization metadata are outside the estimate. Timing, hardware usage and answer quality require a measured run.</p></div></details>
+    <p class="load-scope">Estimated storage for an 8B model with independent request caches. The replay shows event order. No model runs in this view.</p>
+    <span id="load-announcement" class="load-sr" role="status"></span>
+  </div>
+  <noscript><div class="paper-load"><h2>The original workload</h2><p>Shared weights use 14.901 GiB. Two full request caches use 4 GiB each. With 1 GiB held in reserve, those requests use 23.901 GiB. The first 809 tokens of C still fit. Token 810 puts the estimate 40,960 bytes over budget.</p><p>The original peak is 24.901 GiB. Starting C after A releases its cache lowers the peak to 23.901 GiB and preserves all 73,728 requested tokens.</p></div></noscript>
+</section>
+</details>
+</main><footer><span>By Brandon Frank Han-Chween Huang</span><a href="../README.md">Project documentation →</a><a href="../index.html">Back to projects ↗</a></footer></body></html>
+

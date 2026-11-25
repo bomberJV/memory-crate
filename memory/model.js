@@ -10,6 +10,8 @@ export const OPTIONS = Object.freeze({
 });
 export const ARCHITECTURE = Object.freeze({ layers: 32, kvHeads: 8, headDimension: 128, cacheBits: 16 });
 export const DEFAULT_BUILD = Object.freeze({ parameters: 8, bits: 16, capacity: 8, tokens: 8192, sequences: 1, reserve: 1 });
+// A fixed starting point: context growth crosses a 16-GiB estimated budget.
+export const TRACE_BUILD = Object.freeze({ ...DEFAULT_BUILD, capacity: 16, tokens: 0 });
 export const MISSIONS = Object.freeze([
   { id: 'small-box', name: 'The pocket build', tagline: '3B parameters. 4 GiB to work with.', capacity: 4, reserve: .5, minParameters: 3, minTokens: 0, minSequences: 1,
     brief: 'Pack at least 3B parameters into 4 GiB. Keep 0.5 GiB aside. Cache is optional. Use the highest weight precision that meets the brief.',
@@ -29,24 +31,68 @@ function finiteNonnegative(value, label) {
   if (!Number.isFinite(value) || value < 0) throw new RangeError(`${label} must be finite and nonnegative`);
   return value;
 }
-export function weightsGiB(parameters, bits) {
+export function bytesToGB(bytes) {
+  return finiteNonnegative(bytes, 'Bytes') / 1e9;
+}
+export function bytesToGiB(bytes) {
+  return finiteNonnegative(bytes, 'Bytes') / GIB;
+}
+export function weightsBytes(parameters, bits) {
   finiteNonnegative(parameters, 'Parameters');
   finiteNonnegative(bits, 'Bits');
-  return parameters * 1e9 * bits / 8 / GIB;
+  return finiteNonnegative(parameters * 1e9 * bits / 8, 'Weight bytes');
 }
-export function cacheGiB(tokens, sequences, architecture = ARCHITECTURE) {
+export function cacheBytes(tokens, sequences, architecture = ARCHITECTURE) {
+  if (!architecture || typeof architecture !== 'object' || Array.isArray(architecture)) throw new RangeError('Architecture must define the cache dimensions');
   for (const [key, value] of Object.entries({ tokens, sequences, layers: architecture.layers, kvHeads: architecture.kvHeads, headDimension: architecture.headDimension, cacheBits: architecture.cacheBits })) finiteNonnegative(value, key);
   const { layers, kvHeads, headDimension, cacheBits } = architecture;
-  return 2 * layers * kvHeads * headDimension * tokens * sequences * cacheBits / 8 / GIB;
+  return finiteNonnegative(2 * layers * kvHeads * headDimension * tokens * sequences * cacheBits / 8, 'Cache bytes');
+}
+export function weightsGiB(parameters, bits) {
+  return bytesToGiB(weightsBytes(parameters, bits));
+}
+export function cacheGiB(tokens, sequences, architecture = ARCHITECTURE) {
+  return bytesToGiB(cacheBytes(tokens, sequences, architecture));
 }
 export function accounting(build) {
+  if (!build || typeof build !== 'object' || Array.isArray(build)) throw new RangeError('Build must define all accounting inputs');
   const weights = weightsGiB(build.parameters, build.bits);
   const cache = cacheGiB(build.tokens, build.sequences);
   const reserve = finiteNonnegative(build.reserve, 'Reserve');
   const capacity = finiteNonnegative(build.capacity, 'Capacity');
   if (capacity === 0) throw new RangeError('Capacity must be positive');
-  const total = weights + cache + reserve;
-  return { weights, cache, reserve, capacity, total, free: Math.max(0, capacity - total), overflow: Math.max(0, total - capacity), fits: total <= capacity + 1e-9 };
+  const total = finiteNonnegative(weights + cache + reserve, 'Total allocation');
+  return { weights, cache, reserve, capacity, total, free: Math.max(0, capacity - total), overflow: Math.max(0, total - capacity), fits: total <= capacity };
+}
+
+/** Compare evaluated allocations; dependency membership is distinct from value change. */
+export function allocationTrace(beforeBuild, afterBuild) {
+  const before = accounting(beforeBuild), after = accounting(afterBuild);
+  const changedInputs = Object.keys(OPTIONS).filter(key => beforeBuild[key] !== afterBuild[key]);
+  const allocationInputs = ['parameters', 'bits', 'tokens', 'sequences', 'reserve'];
+  const budgetInputs = [...allocationInputs, 'capacity'];
+  const definitions = [
+    { key: 'weights', label: 'Shared weights', kind: 'calculated', dependsOn: ['parameters', 'bits'] },
+    { key: 'cache', label: 'KV cache', kind: 'calculated', dependsOn: ['tokens', 'sequences'] },
+    { key: 'reserve', label: 'Assumed reserve', kind: 'assumed', dependsOn: ['reserve'] },
+    { key: 'capacity', label: 'Estimated budget', kind: 'assumed', dependsOn: ['capacity'] },
+    { key: 'total', label: 'Total allocation', kind: 'calculated', dependsOn: allocationInputs },
+    { key: 'free', label: 'Unallocated budget', kind: 'calculated', dependsOn: budgetInputs },
+    { key: 'overflow', label: 'Estimated overflow', kind: 'calculated', dependsOn: budgetInputs }
+  ];
+  const rows = definitions.map(row => ({
+    ...row,
+    affected: changedInputs.some(key => row.dependsOn.includes(key)),
+    changed: before[row.key] !== after[row.key],
+    before: before[row.key], after: after[row.key], delta: after[row.key] - before[row.key]
+  }));
+  return { before, after, changedInputs, rows };
+}
+
+/** Evaluate every context setting through the same calculator, including overflow. */
+export function contextSeries(build) {
+  accounting(build);
+  return OPTIONS.tokens.map(tokens => ({ tokens, ...accounting({ ...build, tokens }) }));
 }
 export function isValidBuild(value) {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value) && Object.keys(OPTIONS).every(key => OPTIONS[key].includes(value[key])));
@@ -90,3 +136,4 @@ export function formatGiB(value) {
   if (!Number.isFinite(value)) return '—';
   return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+

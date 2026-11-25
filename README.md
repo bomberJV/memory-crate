@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml/badge.svg)](https://github.com/bomberJV/memory-crate/actions/workflows/tests.yml) · [Open it on brandonfhuang.com](https://brandonfhuang.com/projects/play/memory/)
 
-Estimate how model weights, a KV cache and reserved memory fit on a device.
+Inspect the token that pushes a third request over a 24 GiB memory budget. Move its arrival, change weight precision, or shorten its context. The chart and the original packing workshop use the same calculator for shared weights, private KV caches and an assumed reserve.
 
 From the repository root, run `python -m http.server 8000` and open [Memory Crate](http://localhost:8000/memory/).
 
@@ -20,3 +20,4 @@ Created by Brandon Frank Han-Chween Huang ([brandonfhuang.com](https://brandonfh
 - **Writing, figures, papers, results and narration recordings**: [CC BY 4.0](LICENSE-CC-BY-4.0.txt). Credit “Brandon Frank Han-Chween Huang” and link to https://brandonfhuang.com or this repository.
 - **Third-party files** keep their own licenses:
   - `shared/symbols.woff` is a DejaVu font subset under the Bitstream Vera license ([shared/FONT-LICENSE.txt](shared/FONT-LICENSE.txt)).
+
