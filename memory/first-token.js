@@ -57,7 +57,7 @@ export async function mountFirstToken() {
   function makeLane(lane) {
     const wrapper = node('div','ft-lane');
     const header = node('div','ft-lane-head');
-    header.append(node('span','',names[lane.key]+' · '+lane.count+' tokens'),node('small','','First token · '+milli(lane.first)));
+    header.append(node('span','',names[lane.key]+' · '+lane.count.toLocaleString('en-US')+' tokens'),node('small','','First token · '+milli(lane.first)));
     const cache = node('small','ft-cache',mib(lane.steps[0].kvBytes)+' KV cache after input');
     lane.answer = node('p','ft-answer');
     const track = node('div','ft-track');
