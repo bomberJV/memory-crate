@@ -1,5 +1,7 @@
 import { cacheBytes } from './model.js';
 
+import { mountDeviceRun } from './observation/device-run.js';
+
 export async function mountFirstToken() {
   const chapter = document.getElementById('first-token');
   if (!chapter) return;
@@ -124,7 +126,7 @@ export async function mountFirstToken() {
     id('ft-method').textContent = 'After prefill the selected board has '+num.format(sample.kvBytes)+' bytes of KV tensors. Its cache geometry predicts '+num.format(cacheBytes(c.inputIds.length,1,record.architecture))+' bytes. The process resident set sampled at that boundary was '+mib(sample.rssBytes)+'. Model parameter payload: '+mib(record.weightsBytes)+'. RSS includes the runtime. GPU memory and power were not measured. Raw data includes model-load time, the first process call, warm repetitions, token IDs, hashes and every step.';
     paint(amended ? duration : lanes[0].end);
   }
-  id('ft-device').textContent = record.model+' · '+record.cpu+' · '+record.threads+' CPU threads · FP32 · PyTorch '+record.runtime.torch+'. Each lane plays the warm run with median prefill time. Greedy decoding, up to '+record.maxOutputTokens+' output tokens. Clocks sum timed synchronous forward passes and token selection. Loading, tokenization, logging and queueing are excluded.';
+  id('ft-device').textContent = record.model+' · '+record.cpu+' · '+record.threads+' CPU threads · FP32 · PyTorch '+record.runtime.torch+'. License: '+record.license+'. Revision: '+record.revision+'. Each lane plays the warm run with median prefill time. Greedy decoding, up to '+record.maxOutputTokens+' output tokens. Clocks sum timed synchronous forward passes and token selection. Loading, tokenization, logging and queueing are excluded.';
   for (const [key,c] of Object.entries(record.cases)) {
     const first = c.runs.map(r=>r.steps[0].ns);
     const decoding = c.runs.flatMap(r=>r.steps.slice(1).map(s=>s.ns));
@@ -159,4 +161,5 @@ export async function mountFirstToken() {
   };
   chapter.querySelector('.ft-live').hidden=false;
   configure();
+  mountDeviceRun(record, chapter.dataset.worker);
 }

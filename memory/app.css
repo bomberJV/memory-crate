@@ -33,3 +33,31 @@
 @media(max-width:850px){.trace-layout{grid-template-columns:1fr}.trace-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.trace-heading{gap:24px}.trace-heading>p{font-size:12px}.context-step{padding:15px 12px}.context-step strong{font-size:20px}}
 @media(max-width:600px){.inference-trace{padding-top:24px;margin-bottom:42px}.trace-heading{grid-template-columns:1fr;gap:18px}.trace-heading h2{font-size:36px}.trace-heading>p{max-width:none;font-size:13px}.trace-scope{font-size:11px}.trace-actions{gap:8px}.trace-actions button{font-size:11px;padding:11px 13px}.trace-board{padding:20px}.trace-board-top{gap:12px}.trace-big-number strong{font-size:39px}.trace-controls{grid-template-columns:1fr 1fr}.trace-controls label{font-size:10px}.context-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.context-step{min-height:125px;padding:16px}.context-step:last-child{grid-column:1/-1;min-height:108px}.context-step strong{font-size:24px}.trace-handoff{grid-template-columns:1fr;gap:12px;padding-top:22px}.trace-handoff a{grid-column:1}.trace-table-heading h3{font-size:22px}}
 
+
+/* The calculator is the project opening. Keep its boundary and first controls in view. */
+.inference-trace{margin:0 0 32px;padding:0;border-top:0}
+.calculator-opening{margin:0 0 24px}
+.calculator-opening .kicker{margin:0 0 6px}
+.calculator-opening h1{font-size:clamp(45px,6vw,80px);line-height:1.02;margin:0}
+.calculator-opening>p:last-child{margin:12px 0 0;max-width:62ch;font-size:clamp(16px,1.7vw,20px);color:var(--muted)}
+.trace-big-number{margin:16px 0 0}
+.trace-verdict{min-height:0;margin:5px 0 16px;color:var(--ink);font-size:15px}
+.trace-allocation-row{margin:14px 0}
+.trace-track{height:25px}
+.trace-row-label,.trace-row-caption,.trace-legend span{font-size:12px}
+.trace-row-caption{margin-top:6px}
+.trace-legend{margin:15px 0}
+.trace-difference{margin:15px 0 0;color:var(--ink);font-size:15px;line-height:1.5}
+.trace-board .context-heading{margin:18px 0 8px}.context-heading h3{font-size:18px}.context-heading p{margin:2px 0}
+.trace-board .context-steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.trace-board .context-step{min-height:44px;padding:9px 4px;display:grid;place-items:center;gap:1px}
+.trace-board .context-step strong{font-size:clamp(13px,1.5vw,20px)}
+.trace-board .context-step:last-child{grid-column:auto}
+.trace-board .context-step .step-size,.trace-board .context-step .step-status{display:none}
+.trace-actions{margin-top:14px}
+.trace-action-status:empty{display:none}
+.trace-evidence,.trace-calculation{border-top:1px solid var(--line);padding:12px 0;margin:12px 0 0}
+.trace-evidence summary,.trace-calculation summary{cursor:pointer;font-size:15px}
+.trace-handoff{margin-top:18px}
+@media(max-width:600px){.calculator-opening{margin-bottom:14px}.calculator-opening>p:last-child{margin-top:6px}.trace-board{padding:15px}.trace-legend{gap:5px 10px}.trace-board-top{gap:4px 12px}.trace-legend span,.trace-row-caption{font-size:11px}.trace-big-number{margin-top:10px}.trace-big-number strong{font-size:32px}.trace-track{height:17px}.trace-row-label{margin-bottom:6px}.trace-difference{font-size:14px}.trace-constraint-panel{padding:16px}.trace-controls label{font-size:12px}.trace-board .context-steps{gap:3px}.trace-board .context-step{padding:8px 1px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

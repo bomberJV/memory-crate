@@ -4,7 +4,7 @@ const labels = { parameters: 'Parameters (billions)', bits: 'Weight precision (b
 const number = value => value.toLocaleString('en-US', { maximumFractionDigits: 3 });
 const gib = value => `${number(value)} GiB`;
 const exact = value => value.toLocaleString('en-US', { maximumFractionDigits: 12 });
-const kinds = ['weights', 'cache', 'reserve'];
+const kinds = ['weights', 'reserve', 'cache'];
 
 /** Presentation only: every allocation, sweep and comparison comes from model.js. */
 export function createTrace({ onChange, onExample, onBaseline, onReset }) {
@@ -37,10 +37,10 @@ export function createTrace({ onChange, onExample, onBaseline, onReset }) {
     button.onclick = () => onChange('tokens', tokens);
     const title = document.createElement('strong');
     title.textContent = number(tokens);
-    const unit = document.createElement('span'); unit.textContent = 'tokens / sequence';
+
     const size = document.createElement('span'); size.className = 'step-size';
     const status = document.createElement('span'); status.className = 'step-status';
-    button.append(title, unit, size, status);
+    button.append(title, size, status);
     $('#context-steps').append(button);
     return { button, size, status };
   });
@@ -72,12 +72,23 @@ export function createTrace({ onChange, onExample, onBaseline, onReset }) {
       select.value = String(build[key]);
       select.disabled = locked && ['capacity', 'reserve'].includes(key);
     });
-    $('#trace-lock-note').textContent = locked ? 'This packing brief fixes budget and reserve. Load the context example to return to free play.' : 'All six controls use the same build as the workshop below.';
+    $('#trace-lock-note').hidden = !locked;
+    $('#trace-lock-note').textContent = locked ? 'The active workshop brief fixes the budget and reserve.' : '';
     $('#trace-state').textContent = result.fits ? (result.free === 0 ? 'Exactly at the estimated budget' : 'Within the estimated budget') : 'Estimated budget exceeded';
     $('#trace-state').classList.toggle('over', !result.fits);
     $('#trace-total').textContent = gib(result.total);
-    $('#trace-budget').textContent = `required / ${gib(result.capacity)} budget`;
-    $('#trace-verdict').textContent = result.fits ? `${gib(result.free)} unallocated. Runtime memory and answer quality are not measured.` : `${gib(result.overflow)} beyond the estimated budget. This is an accounting result, not a runtime crash.`;
+    $('#trace-budget').textContent = `required of ${gib(result.capacity)} available`;
+    $('#trace-verdict').textContent = result.fits ? `${gib(result.free)} of headroom.` : `${gib(result.overflow)} over budget.`;
+    const components = trace.rows.filter(row => kinds.includes(row.key));
+    const changed = components.filter(row => row.changed);
+    const stable = components.filter(row => !row.changed).map(row => row.label.toLowerCase());
+    const differences = changed.map(row => `${row.label} ${row.delta > 0 ? 'grew' : 'fell'} from ${number(row.before)} to ${gib(row.after)}.`);
+    if (changed.length && stable.length) {
+      const label = stable.join(' and ');
+      differences.push(label[0].toUpperCase() + label.slice(1) + ' stayed fixed.');
+    }
+    if (!changed.length) differences.push(trace.changedInputs.length ? 'Weights, cache and assumed reserve match the baseline.' : 'Current allocation matches the baseline.');
+    $('#trace-difference').textContent = differences.join(' ');
     const scale = Math.max(trace.before.total, result.total, trace.before.capacity, result.capacity) * 1.04;
     $('#trace-allocations').replaceChildren(allocationRow('Baseline', trace.before, scale), allocationRow('Current', result, scale));
     $('#trace-changes').textContent = trace.changedInputs.length ? `Changed from baseline: ${trace.changedInputs.map(key => `${labels[key]} ${number(baseline[key])} → ${number(build[key])}`).join('; ')}.` : 'No inputs changed from baseline.';

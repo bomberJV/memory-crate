@@ -7,13 +7,14 @@ import { createTrace } from './trace.js';
 const $ = selector => document.querySelector(selector);
 const STORAGE_KEY = 'brandon-memory-crate-v2';
 const saved = safeLoad(STORAGE_KEY, {});
-let workshopBuild = sanitizeBuild(saved?.build);
+const initialBuild = { ...TRACE_BUILD, tokens: 8192 };
+let workshopBuild = sanitizeBuild(saved?.build, initialBuild);
 let build = { ...workshopBuild };
 let solved = sanitizeProgress(saved?.solved);
 let pinned = Array.isArray(saved?.pinned) ? saved.pinned.filter(isValidBuild).slice(0, 2).map(value => sanitizeBuild(value)) : [];
 let missionId = 'sandbox';
 let hasChecked = false;
-let traceBaseline = { ...build };
+let traceBaseline = saved?.build ? { ...build } : { ...TRACE_BUILD };
 const renderTrace = createTrace({
   onChange: change,
   onExample: () => {
@@ -236,9 +237,9 @@ mountWorkload();
 mountFirstToken();
 
 function openLinkedWorkshop() {
-  const section = document.getElementById('memory-workshop');
   const target = document.getElementById(location.hash.slice(1));
-  if (target && section.contains(target)) {
+  const section = target?.closest('details.analysis-workshop');
+  if (section) {
     section.open = true;
     target.scrollIntoView({ block: 'start' });
   }

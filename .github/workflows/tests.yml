@@ -24,8 +24,8 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/workload-checks/node_modules" node scripts/check-workload.cjs "$RUNNER_TEMP/workload-pictures"
       - name: Verify live CPU inference in Chrome
         run: |
-          node scripts/build-observation.mjs "$RUNNER_TEMP/observation.html"
-          NODE_PATH="$RUNNER_TEMP/workload-checks/node_modules" node scripts/check-device.cjs "$RUNNER_TEMP/observation.html" "$RUNNER_TEMP/workload-pictures"
+          node scripts/build-preview.mjs "$RUNNER_TEMP/combined.html"
+          NODE_PATH="$RUNNER_TEMP/workload-checks/node_modules" node scripts/check-device.cjs "$RUNNER_TEMP/combined.html" "$RUNNER_TEMP/workload-pictures"
       - name: Save screen checks
         if: always()
         uses: actions/upload-artifact@v4
