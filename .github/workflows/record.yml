@@ -6,6 +6,11 @@ on:
       - 'experiment/requirements.txt'
       - '.github/workflows/record.yml'
     types: [opened, reopened]
+  push:
+    branches: [feat/device-inference-observation]
+    paths:
+      - 'experiment/record.py'
+      - 'experiment/requirements.txt'
   workflow_dispatch:
 permissions:
   contents: read

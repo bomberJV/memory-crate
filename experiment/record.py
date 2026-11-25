@@ -18,19 +18,15 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, DynamicCache
 
 MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 REV = "12fd25f77366fa6b3b4b768ec3050bf629380bac"
-QUESTION = "Which platform should a passenger use for the overnight train to Lisbon? Answer in one sentence."
+QUESTION = "What is the value of num_hidden_layers? Reply with just the number."
 REPEATS = 5
 FILES = ["model.safetensors", "config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "generation_config.json"]
-STOPS = ["York", "Riga", "Bern", "Lille", "Lyon", "Porto", "Nice", "Paris"]
 
-
-def make_prompt(long_log, platform_no):
-    rows = []
-    if long_log:
-        for i in range(32):
-            rows.append(f"{6+i//4:02d}:{(i%4)*15:02d} | Local train to {STOPS[i%8]} | Platform {1+i%6} | Departed.")
-    rows.append(f"23:40 | Overnight train to Lisbon | Platform {platform_no} | Confirmed.")
-    return "Station departure log:\n" + "\n".join(rows) + "\n\n" + QUESTION
+def make_prompt(configuration, full):
+    # Both inputs quote the same pinned config.json. Only the amount of context differs.
+    layer_line = next(line for line in configuration.splitlines() if '"num_hidden_layers"' in line)
+    context = configuration.strip() if full else layer_line.strip().rstrip(",")
+    return "Model configuration:\n" + context + "\n\n" + QUESTION
 
 
 def sha(path):
@@ -81,8 +77,9 @@ def record():
     load_ns = time.perf_counter_ns() - t0
     cases = {}
     tensors = {}
-    for key, long_log, plat in [("short", False, 4), ("long", True, 4), ("edit", True, 9)]:
-        prompt = make_prompt(long_log, plat)
+    configuration = (root / "config.json").read_text(encoding="utf-8")
+    for key, full in [("short", False), ("long", True)]:
+        prompt = make_prompt(configuration, full)
         msgs = [{"role": "user", "content": prompt}]
         ids = tok.apply_chat_template(msgs, tokenize=True, add_generation_prompt=True, return_tensors="pt")
         tensors[key] = ids
@@ -99,7 +96,7 @@ def record():
         case["shown"] = sorted(range(REPEATS), key=lambda j: case["runs"][j]["steps"][0]["ns"])[REPEATS//2]
     config = model.config
     return {
-        "schema": 1, "date": datetime.now(timezone.utc).isoformat(), "model": MODEL,
+        "schema": 2, "date": datetime.now(timezone.utc).isoformat(), "model": MODEL,
         "revision": REV, "tokenizerRevision": REV, "license": "Apache-2.0", "eos": tok.eos_token_id,
         "hashes": {p.name: sha(p) for p in sorted(root.iterdir()) if p.name in FILES},
         "runtime": {p: version(p) for p in ["torch","transformers","tokenizers","huggingface-hub","safetensors","numpy"]},
